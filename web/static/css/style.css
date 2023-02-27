@@ -1,0 +1,35 @@
+/**
+ * Created by RTT.
+ * Author: teocci@yandex.com on 2022-6월-10
+ */
+@import "variables.css";
+@import "default.css";
+
+main {
+    width: 100vw;
+    height: calc(100vh - var(--footer-height));
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+footer {
+    height: var(--footer-height);
+    line-height: 2rem;
+    background-color: var(--bg-light-gray);
+    overflow: hidden;
+    user-select: none;
+}
+
+footer .copy {
+    font-size: 0.8rem;
+    color: var(--font-dark-color);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.hidden {
+    display: none !important;
+}
+

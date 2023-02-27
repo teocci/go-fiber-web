@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/style.css"/>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+    <title>Document</title>
+</head>
+
+<body>
+<div class="wrapper">
+    <div class="main">
+        <div class="aside">
+            <div class="header part">
+                <h1 class="title">TSP Lib 가시화 도구</h1>
+            </div>
+            <div class="sections part">
+                <section class="points">
+                    <h2 class="title">배달전 선택</h2>
+                    <div class="controls">
+                        <div class="manual control">
+                            <button>지도에서 직접</button>
+                        </div>
+                        <div class="random control">
+                            <button>랜덤</button>
+                            <div class="options">
+                                <div class="option">
+                                    <input type="radio" id="random-10" name="random-points" value="10" checked>
+                                    <label for="random-10">10</label>
+                                </div>
+                                <div class="option">
+                                    <input type="radio" id="random-20" name="random-points" value="20">
+                                    <label for="random-20">20</label>
+                                </div>
+                                <div class="option">
+                                    <input type="radio" id="random-30" name="random-points" value="30">
+                                    <label for="random-30">30</label>
+                                </div>
+                                <div class="option">
+                                    <input type="radio" id="random-100" name="random-points" value="100">
+                                    <label for="random-100">100</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="generators">
+                    <h2 class="title">경로 탐색</h2>
+                    <div class="types">
+                        <div class="type">
+                            <input type="checkbox" id="tsp" name="tsp" checked>
+                            <label for="tsp">TSP Lib</label>
+                        </div>
+                        <div class="type">
+                            <input type="checkbox" id="tmap" name="tmap" checked>
+                            <label for="tmap">T-Map</label>
+                        </div>
+                    </div>
+                    <div class="generate">
+                        <button>지도에서 직접</button>
+                    </div>
+                </section>
+                <section class="results">
+                    <h2 class="title">배달전 선택</h2>
+                    <div id="results-content" class="content"></div>
+                </section>
+            </div>
+            <div class="footer part">
+                <div class="copy">&copy; Realtimetech</div>
+            </div>
+        </div>
+        <div id="map" class="map"></div>
+    </div>
+    <div class="shadow">
+        <div class="bar"></div>
+    </div>
+</div>
+
+{{/*<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=06f04f21658e8f35d27d48b00f144297"></script>*/}}
+
+<script type="text/javascript" src="js/sdk.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+
+</html>
