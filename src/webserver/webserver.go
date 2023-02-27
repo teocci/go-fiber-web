@@ -64,6 +64,7 @@ func Start() {
 
 	api := router.Group("/api/v1")
 	api.Get("/seller/:id", apictrlr.HandleSeller)
+	api.Get("/products/seller/:id", apictrlr.HandleProducts)
 
 	fmt.Println("[url]", urlFormat(address))
 

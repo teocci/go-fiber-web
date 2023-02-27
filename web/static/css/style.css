@@ -11,7 +11,13 @@ main {
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
-    align-items: center;
+}
+
+.products {
+    flex-grow: 1;
+    max-height: calc(100vh - var(--footer-height) - 2*var(--padding));
+    padding: var(--padding);
+    overflow-y: auto;
 }
 
 footer {

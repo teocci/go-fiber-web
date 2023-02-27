@@ -3,6 +3,12 @@
 // Author: teocci@yandex.com on 2023-2월-27
 package model
 
+import (
+	"encoding/json"
+	"fmt"
+	"net/url"
+)
+
 type ProductResponse struct {
 	State   int `json:"state"`
 	Version int `json:"version"`
@@ -51,4 +57,41 @@ type ProductResponse struct {
 			PromoTextCat string `json:"promoTextCat,omitempty"`
 		} `json:"products"`
 	} `json:"data"`
+}
+
+func (pr *ProductResponse) GetJSON(id string) (err error) {
+	baseURL := &url.URL{
+		Scheme: "https",
+		Host:   "catalog.wb.ru",
+		Path:   "/sellers/catalog",
+	}
+
+	params := baseURL.Query()
+	params.Set("appType", "1")
+	params.Set("couponsGeo", "12,3,18,15,21")
+	params.Set("curr", "rub")
+	params.Set("dest", "-1257786")
+	params.Set("emp", "0")
+	params.Set("lang", "ru")
+	params.Set("locale", "ru")
+	params.Set("pricemarginCoeff", "1.0")
+	params.Set("reg", "0")
+	params.Set("regions", "80,64,38,4,83,33,68,70,69,30,86,75,40,1,22,66,31,48,110,71")
+	params.Set("sort", "popular")
+	params.Set("spp", "0")
+	params.Set("supplier", id)
+	baseURL.RawQuery = params.Encode()
+
+	url := baseURL.String()
+	fmt.Printf("WB_API_URL: %#v\n", url)
+
+	r, err := httpClient.Get(url)
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+
+	err = json.NewDecoder(r.Body).Decode(&pr)
+
+	return err
 }

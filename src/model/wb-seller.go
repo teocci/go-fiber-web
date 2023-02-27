@@ -19,7 +19,7 @@ type SellerResponse struct {
 }
 
 func (sr *SellerResponse) GetJSON(url string) (err error) {
-	fmt.Printf("JAVA_API_URL: %#v\n", url)
+	fmt.Printf("WB_API_URL: %#v\n", url)
 
 	r, err := httpClient.Get(url)
 	if err != nil {

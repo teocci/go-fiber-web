@@ -18,12 +18,27 @@ export default class ProductTable extends BaseComponent {
         const $wrapper = document.createElement('div')
         $wrapper.classList.add('products', 'module-wrapper')
 
+        const formatter = new Intl.NumberFormat('ru-RU', {
+            style: 'currency',
+            currency: 'RUB',
+        })
+
         this.grid = new gridjs.Grid({
-            columns: ['Name', 'Language', 'Released At', 'Artist'],
+            columns: ['ID', 'Name', , {
+                name: 'Price',
+                columns: [{
+                    name: 'Base',
+                    formatter: cell => formatter.format(cell),
+                }, {
+                    name: 'Sale',
+                    formatter: cell => formatter.format(cell),
+                }],
+            }],
             search: true,
+            sort: true,
             server: {
-                url: 'https://catalog.wb.ru/sellers/catalog?appType=1&couponsGeo=12,3,18,15,21&curr=rub&dest=-1257786&emp=0&lang=ru&locale=ru&pricemarginCoeff=1.0&reg=0&regions=80,64,38,4,83,33,68,70,69,30,86,75,40,1,22,66,31,48,110,71&sort=popular&spp=0&supplier=25169',
-                then: data => data.products.map(product => [product.id, product.name, product.brand, product.priceU, product.salePriceU]),
+                url: '/api/v1/products/seller/25169',
+                then: d => d.data.products.map(product => [product.id, product.name, product.priceU / 100, product.salePriceU / 100]),
                 handle: res => {
                     // no matching records found
                     if (res.status === 404) return {data: []}
@@ -40,4 +55,10 @@ export default class ProductTable extends BaseComponent {
     }
 
     initListeners() {}
+
+    fetchProducts() {
+        fetch('/api/v1/products/seller/25169')
+            .then((response) => response.json())
+            .then((data) => console.log(data))
+    }
 }
