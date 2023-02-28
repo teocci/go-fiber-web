@@ -133,14 +133,14 @@ func (pr *ProductListResponse) GetAll(supplierID string) (err error) {
 		page++
 	}
 
-	for i, p := range raw {
+	for _, p := range raw {
 		if p.Id == 120793222 {
 			continue
 		}
 
-		if i > 5 {
-			break
-		}
+		//if i > 5 {
+		//	break
+		//}
 
 		identical := IdenticalProductsResponse{}
 		err = identical.GetJSON(strconv.Itoa(p.Id))
