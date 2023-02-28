@@ -20,6 +20,78 @@ main {
     overflow-y: auto;
 }
 
+.gridjs-head {
+    display: flex;
+    justify-content: space-between;
+    gap: .5rem;
+}
+
+.gridjs-head .export-btn {
+    background-color: #cb11ab;
+    border: 1px solid #cb11ab;
+    border-radius: 4px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-family: Graphik, -apple-system, system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    font-size: 14px;
+    line-height: 1.15;
+    overflow: visible;
+    padding: 12px 16px;
+    position: relative;
+    text-align: center;
+    text-transform: none;
+    transition: all 80ms ease-in-out;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    width: fit-content;
+}
+
+.gridjs-head .export-btn:disabled {
+    opacity: .5;
+}
+
+.gridjs-head .export-btn:focus {
+    outline: 0;
+}
+
+.gridjs-head .export-btn:hover {
+    background-color: #0A46E4;
+    border-color: #0A46E4;
+}
+
+.gridjs-head .export-btn:active {
+    background-color: #0039D7;
+    border-color: #0039D7;
+}
+
+
+/*table .gridjs-tbody {*/
+/*    display: block;*/
+/*    max-height: 800px;*/
+/*    width: 100%;*/
+/*    overflow-y: scroll;*/
+/*}*/
+
+/*table .gridjs-thead, table .gridjs-tbody tr {*/
+/*    display: table;*/
+/*    width: 100%;*/
+/*    table-layout: fixed;*/
+/*}*/
+
+/*table .gridjs-thead th:last-child {*/
+/*    width: calc(450px - 1em)*/
+/*}*/
+/*table .gridjs-tbody td:last-child {*/
+/*    width: calc(450px)*/
+/*}*/
+
+.gridjs-table .gridjs-th,
+.gridjs-table .gridjs-td {
+    padding: .5rem 1rem;
+}
+
 .identical-wrapper,
 .wb-product,
 .wbp-item {

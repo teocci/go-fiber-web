@@ -133,15 +133,15 @@ const mergeArrays = (base, ...adders) => {
                     merged[i] = mergeArrays(merged[i] || [], ...v)
                     break
                 case isObject(v):
-                    merged[i] =  merger(true, merged[i] || {}, v)
+                    merged[i] = merger(true, merged[i] || {}, v)
                     break
                 default:
-                    merged[i] =  v
+                    merged[i] = v
             }
         }
     }
 
-    return merged;
+    return merged
 }
 
 // Merge the object into the extended object
@@ -225,6 +225,15 @@ const hashID = (size = 6) => {
     return bytes.reduce((acc, byte) => `${acc}${charset[byte & MASK]}`, '')
 }
 
+const todayToYYYYMMDD = () => {
+    const currentDate = new Date()
+    const options = {year: 'numeric', month: '2-digit', day: '2-digit'}
+    const formatter = new Intl.DateTimeFormat('ko-KR', options)
+    const parts = formatter.formatToParts(currentDate)
+
+    return `${parts[0].value}-${parts[2].value}-${parts[4].value}`
+}
+
 const utcToKRTime = utcDateString => {
     if (!utcDateString) return null
     const date = new Date(utcDateString)
@@ -251,6 +260,18 @@ const utcToKRDate = utcDateString => {
 const utcToFormat = (date, options) => {
     const formatter = new Intl.DateTimeFormat('ko-KR', options)
     return formatter.format(date)
+}
+
+const watchVariable = (o, handler) => {
+    return new Proxy(o, {
+        set(o, k, v) {
+            const previous = o[k]
+            o[k] = v
+            if (previous === null && v !== null) handler(k, v)
+
+            return true
+        },
+    })
 }
 
 function serializeDate() {

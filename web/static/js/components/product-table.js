@@ -9,6 +9,8 @@ const currencyFormatter = new Intl.NumberFormat('ru-RU', {
     currency: 'RUB',
 })
 
+const MAIN_SUPPLIER = 25169
+
 const BOX_SUPPLIER = 'supplier'
 const BOX_PRODUCT = 'product'
 const BOX_PRICES = 'prices'
@@ -48,6 +50,8 @@ export default class ProductTable extends BaseComponent {
     constructor(element) {
         super(element)
 
+        this.resolver = null
+
         this.initElements()
         this.initListeners()
 
@@ -60,10 +64,17 @@ export default class ProductTable extends BaseComponent {
 
         this.grid = new gridjs.Grid({
             columns: [
-                'ID',
-                'Name',
+                {
+                    name: 'ID',
+                    width: '100px',
+                },
+                {
+                    name: 'Name',
+                    width: '300px',
+                },
                 {
                     name: 'Price',
+                    width: '240px',
                     columns: [{
                         name: 'Base',
                         formatter: cell => currencyFormatter.format(cell),
@@ -74,9 +85,13 @@ export default class ProductTable extends BaseComponent {
                 },
                 {
                     name: 'Competitors',
+                    sort: false,
+                    width: '450px',
                     formatter: cell => {
                         console.log({cell})
                         const {identical} = cell
+
+                        if (isNil(identical)) return
 
                         const $tmp = document.createElement('div')
                         const $wrapper = document.createElement('div')
@@ -113,14 +128,34 @@ export default class ProductTable extends BaseComponent {
             ],
             search: true,
             sort: true,
-            data: [],
-            pagination: {
-                limit: 50,
-                summary: false,
-            },
+            data: () => new Promise((resolve) => {
+                this.resolver = resolve
+            }),
         })
 
         this.grid.render($wrapper)
+
+        const PluginExport = () => {
+            return gridjs.h(
+                'button',
+                {
+                    className: 'export-btn',
+                    onClick: () => {
+                        this.exportTableToXlsx()
+                    },
+                },
+                'Export',
+            )
+        }
+
+        this.grid.plugin.add({
+            id: 'exportToExcel',
+            component: PluginExport,
+            position: gridjs.PluginPosition.Header,
+        })
+
+        this.$head = document.querySelector('.gridjs-head')
+        this.$table = document.querySelector('.gridjs-table')
 
         this.domWithHolderUpdate = $wrapper
     }
@@ -138,10 +173,8 @@ export default class ProductTable extends BaseComponent {
             })
             .then(d => {
                     const data = d.data.products.map(product => [product.id, product.name, product.priceU / 100, product.salePriceU / 100, product])
-                    this.grid.updateConfig({
-                        data,
-                    })
-                    this.grid.forceRender()
+
+                    this.resolver(data)
                 },
             )
     }
@@ -234,5 +267,16 @@ export default class ProductTable extends BaseComponent {
         $price.append($label, $value)
 
         return $price
+    }
+
+    exportTableToXlsx() {
+        const $table = document.querySelector('.gridjs-table')
+        if (isNil($table)) return
+
+        const date = todayToYYYYMMDD()
+        const file = `${date}-${MAIN_SUPPLIER}.xlsx`
+
+        const wb = XLSX.utils.table_to_book($table, {sheet: 'Sheet JS'})
+        return XLSX.writeFile(wb, file)
     }
 }

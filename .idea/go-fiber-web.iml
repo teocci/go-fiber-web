@@ -7,5 +7,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="gridjs" level="application" />
     <orderEntry type="library" name="gridjs" level="application" />
+    <orderEntry type="library" name="xlsx.full" level="application" />
   </component>
 </module>

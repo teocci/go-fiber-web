@@ -133,11 +133,12 @@ func (pr *ProductListResponse) GetAll(supplierID string) (err error) {
 		page++
 	}
 
-	for _, p := range raw {
+	for i, p := range raw {
 		if p.Id == 120793222 {
 			continue
 		}
 
+		_ = i
 		//if i > 5 {
 		//	break
 		//}
