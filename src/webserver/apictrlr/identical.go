@@ -9,16 +9,16 @@ import (
 	"github.com/teocci/go-fiber-web/src/model"
 )
 
-func HandleProductList(c *fiber.Ctx) error {
-	supplierID := c.Params("id")
-	if supplierID == "" {
+func HandleIdentical(c *fiber.Ctx) error {
+	productID := c.Params("id")
+	if productID == "" {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Invalid seller id: null",
 		})
 	}
 
-	products := model.ProductListResponse{}
-	err := products.GetAll(supplierID)
+	products := model.IdenticalProductsResponse{}
+	err := products.GetJSON(productID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -26,6 +26,6 @@ func HandleProductList(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"data": products.Data,
+		"data": products,
 	})
 }
