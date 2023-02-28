@@ -9,6 +9,7 @@ import (
 	"math"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 const totalPerPage = 100
@@ -114,6 +115,7 @@ func (pr *ProductListResponse) GetAll(supplierID string) (err error) {
 	page := 1
 	totalPages := int(math.Ceil(float64(filter.Data.Total) / float64(totalPerPage)))
 	pr.Data.Products = make([]ProductLR, 0)
+	raw := make([]ProductLR, 0)
 
 	for page <= totalPages {
 		tmp := ProductListResponse{}
@@ -127,21 +129,51 @@ func (pr *ProductListResponse) GetAll(supplierID string) (err error) {
 			return err
 		}
 
-		pr.Data.Products = append(pr.Data.Products, tmp.Data.Products...)
+		raw = append(raw, tmp.Data.Products...)
 		page++
 	}
 
-	for _, p := range pr.Data.Products {
+	for i, p := range raw {
 		if p.Id == 120793222 {
 			continue
 		}
+
+		if i > 5 {
+			break
+		}
+
 		identical := IdenticalProductsResponse{}
 		err = identical.GetJSON(strconv.Itoa(p.Id))
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("%d -> [%v\n]", p.Id, identical)
+		if len(identical) == 0 {
+			continue
+		}
+
+		p.Identical = make([]ProductDetail, 0)
+
+		ids := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(identical)), ";"), "[]")
+		fmt.Printf("%d -> [%v]\n", p.Id, identical)
+
+		identicalProducts := ProductDetailResponse{}
+		err = identicalProducts.GetJSON(ids)
+
+		products := identicalProducts.Data.Products
+		for i, prod := range products {
+			seller := SellerResponse{}
+			err = seller.GetJSON(strconv.Itoa(prod.SupplierId))
+			if err != nil {
+				return err
+			}
+
+			products[i].SupplierInfo = seller
+		}
+
+		p.Identical = append(p.Identical, products...)
+
+		pr.Data.Products = append(pr.Data.Products, p)
 	}
 
 	return err

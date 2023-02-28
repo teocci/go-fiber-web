@@ -6,6 +6,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 )
 
 type SellerResponse struct {
@@ -18,10 +19,21 @@ type SellerResponse struct {
 	IsUnknown    bool   `json:"isUnknown"`
 }
 
-func (sr *SellerResponse) GetJSON(url string) (err error) {
-	fmt.Printf("WB_API_URL: %#v\n", url)
+const (
+	urlFormatSeller = "%s/%s"
+)
 
-	r, err := httpClient.Get(url)
+func (sr *SellerResponse) GetJSON(sellerID string) (err error) {
+	baseURL := &url.URL{
+		Scheme: "https",
+		Host:   "www.wildberries.ru",
+		Path:   "/webapi/seller/data/short",
+	}
+
+	apiURL := fmt.Sprintf(urlFormatSeller, baseURL.String(), sellerID)
+	fmt.Printf("WB_API_URL: %#v\n", apiURL)
+
+	r, err := httpClient.Get(apiURL)
 	if err != nil {
 		return err
 	}

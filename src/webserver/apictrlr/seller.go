@@ -4,15 +4,9 @@
 package apictrlr
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/teocci/go-fiber-web/src/model"
-)
-
-const (
-	urlFormatSeller = "https://www.wildberries.ru/webapi/seller/data/short/%s"
 )
 
 func HandleSeller(c *fiber.Ctx) error {
@@ -23,10 +17,8 @@ func HandleSeller(c *fiber.Ctx) error {
 		})
 	}
 
-	url := fmt.Sprintf(urlFormatSeller, sellerID)
-
 	seller := model.SellerResponse{}
-	err := seller.GetJSON(url)
+	err := seller.GetJSON(sellerID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

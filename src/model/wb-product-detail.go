@@ -56,6 +56,7 @@ type ProductDetail struct {
 		BasicSale   int `json:"basicSale"`
 		BasicPriceU int `json:"basicPriceU"`
 	} `json:"extended,omitempty"`
+	SupplierInfo SellerResponse `json:"supplierInfo,omitempty"`
 }
 
 type ProductDetailResponse struct {
@@ -70,11 +71,11 @@ type ProductDetailResponse struct {
 	} `json:"data"`
 }
 
-func (pr *ProductDetailResponse) GetJSON(nm string) (err error) {
+func (pdr *ProductDetailResponse) GetJSON(nm string) (err error) {
 	baseURL := &url.URL{
 		Scheme: "https",
-		Host:   "catalog.wb.ru",
-		Path:   "/sellers/catalog",
+		Host:   "card.wb.ru",
+		Path:   "/cards/detail",
 	}
 
 	params := baseURL.Query()
@@ -101,7 +102,7 @@ func (pr *ProductDetailResponse) GetJSON(nm string) (err error) {
 	}
 	defer r.Body.Close()
 
-	err = json.NewDecoder(r.Body).Decode(&pr)
+	err = json.NewDecoder(r.Body).Decode(&pdr)
 
 	return err
 }
