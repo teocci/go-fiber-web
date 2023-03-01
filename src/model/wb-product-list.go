@@ -139,9 +139,9 @@ func (pr *ProductListResponse) GetAll(supplierID string) (err error) {
 		}
 
 		_ = i
-		if i > 5 {
-			break
-		}
+		//if i > 5 {
+		//	break
+		//}
 
 		identical := IdenticalProductsResponse{}
 		err = identical.GetJSON(strconv.Itoa(p.Id))
