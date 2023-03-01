@@ -4,6 +4,8 @@
  */
 
 :root {
+    /* based on #cb10ac */
+    --font-wb-color: hsl(310, 85%, 43%);
     --font-light-color: hsl(0, 0%, 100%);
     --font-light-color-l60: hsl(0, 0%, 60%);
     --font-light-color-l20: hsl(0, 0%, 20%);
@@ -11,6 +13,8 @@
     --font-mild-color: hsl(210, 1%, 40%);
     --font-dark-color: hsl(210, 2%, 20%);
 
+    /* based on #cb10ac */
+    --bg-wb-color: hsl(310, 85%, 43%);
     --bg-light-gray: hsl(0, 0%, 96%);
     --bg-light-gray-l93: hsl(0, 0%, 93%);
     --bg-light-gray-l86: hsl(0, 0%, 86%);
@@ -19,9 +23,24 @@
     --bg-black-a75: hsla(0, 0%, 0%, .75);
     --bg-black-a03: hsla(0, 0%, 0%, .3);
 
+    /* based on #8076a2 */
+    --wb-contrast: hsl(254, 19%, 55%);
+    /* based on #b083a3 */
+    --wb-complement: hsl(317, 22%, 60%);
+    /* based on #d8bfd8 */
+    --wb-complement-light: hsl(300, 24%, 80%);
+    /* based on #eae6f2 */
+    --wb-light: hsl(260, 32%, 93%);
+
+
+    /* based on #cb10ac */
+    --wb-color: hsl(310, 85%, 43%);
+
     --gray-base: hsl(210, 1%, 40%);
 
     --dark-gray-bg: hsl(210, 2%, 20%);
+
+    --seller-height: 8rem;
 
     --summary-width: 280px;
     --modal-width: 700px;

@@ -62,6 +62,8 @@ func Start() {
 		ExposeHeaders:    "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type",
 	}))
 
+	router.Get("/seller/logo/:id", HandleLogoImage)
+
 	api := router.Group("/api/v1")
 	api.Get("/seller/:id", apictrlr.HandleSeller)
 	api.Get("/products/seller/:id", apictrlr.HandleProductList)

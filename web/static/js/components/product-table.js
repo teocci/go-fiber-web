@@ -3,11 +3,16 @@
  * Author: teocci@yandex.com on 2022-12월-22
  */
 import BaseComponent from '../base/base-component.js'
+import ObservableObject from '../base/observable-object.js'
 
 const currencyFormatter = new Intl.NumberFormat('ru-RU', {
     style: 'currency',
     currency: 'RUB',
 })
+
+const STATE_INIT = 0
+const STATE_DATA_LOADED = 1
+const STATE_DATA_EMPTY = 2
 
 const MAIN_SUPPLIER = 25169
 
@@ -47,15 +52,39 @@ const PRICES = {
 export default class ProductTable extends BaseComponent {
     static TAG = 'table'
 
+    static STATE_INIT = STATE_INIT
+    static STATE_DATA_LOADED = STATE_DATA_LOADED
+    static STATE_DATA_EMPTY = STATE_DATA_EMPTY
+
+    /**
+     * {ObservableObject}
+     */
+    _state
+
     constructor(element) {
         super(element)
 
         this.resolver = null
+        this._state = new ObservableObject()
+
+        this.state = STATE_INIT
 
         this.initElements()
         this.initListeners()
 
         this.fetchProducts()
+    }
+
+    set state(state) {
+        this._state.value = state
+    }
+
+    get state() {
+        return this._state.value
+    }
+
+    set onStateChange(fn) {
+        this._state.onchange = fn
     }
 
     initElements() {
@@ -135,25 +164,6 @@ export default class ProductTable extends BaseComponent {
 
         this.grid.render($wrapper)
 
-        const PluginExport = () => {
-            return gridjs.h(
-                'button',
-                {
-                    className: 'export-btn',
-                    onClick: () => {
-                        this.exportTableToXlsx()
-                    },
-                },
-                'Export',
-            )
-        }
-
-        this.grid.plugin.add({
-            id: 'exportToExcel',
-            component: PluginExport,
-            position: gridjs.PluginPosition.Header,
-        })
-
         this.$head = document.querySelector('.gridjs-head')
         this.$table = document.querySelector('.gridjs-table')
 
@@ -173,6 +183,8 @@ export default class ProductTable extends BaseComponent {
             })
             .then(d => {
                     const data = d.data.products.map(product => [product.id, product.name, product.priceU / 100, product.salePriceU / 100, product])
+
+                    this.state = data.length > 0 ? STATE_DATA_LOADED : STATE_DATA_EMPTY
 
                     this.resolver(data)
                 },

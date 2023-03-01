@@ -9,8 +9,72 @@ main {
     width: 100vw;
     height: calc(100vh - var(--footer-height));
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: column;
     justify-content: center;
+    align-items: center;
+}
+
+.component-wrapper {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100vw;
+    height: var(--seller-height);
+}
+
+.cw-item {
+    display: flex;
+}
+
+.info-wrap {
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: .5rem;
+    width: 80%;
+    height: var(--seller-height);
+}
+
+.btn-wrap {
+    flex-flow: row nowrap;
+    width: 20%;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-wrap .logo-wrap {
+    height: var(--seller-height);
+}
+
+.info-wrap .logo {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.info {
+    display: flex;
+    flex-flow: column;
+    gap: .5rem;
+}
+
+.info .name {
+    margin: 0;
+    color: var(--font-dark-color);
+}
+
+.info .trademark {
+    color: var(--font-wb-color);
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.info .legal-address {
+    color: var(--font-mild-color);
+    font-size: 1rem;
+    font-weight: bold;
 }
 
 .products {
@@ -20,15 +84,9 @@ main {
     overflow-y: auto;
 }
 
-.gridjs-head {
-    display: flex;
-    justify-content: space-between;
-    gap: .5rem;
-}
-
-.gridjs-head .export-btn {
-    background-color: #cb11ab;
-    border: 1px solid #cb11ab;
+.btn-wrap .export-btn {
+    background-color: var(--bg-wb-color);
+    border: 1px solid var(--wb-color);
     border-radius: 4px;
     box-sizing: border-box;
     color: #FFFFFF;
@@ -48,24 +106,23 @@ main {
     width: fit-content;
 }
 
-.gridjs-head .export-btn:disabled {
+.btn-wrap .export-btn:disabled {
     opacity: .5;
 }
 
-.gridjs-head .export-btn:focus {
+.btn-wrap .export-btn:not([disabled]):focus {
     outline: 0;
 }
 
-.gridjs-head .export-btn:hover {
+.btn-wrap .export-btn:not([disabled]):hover {
     background-color: #0A46E4;
     border-color: #0A46E4;
 }
 
-.gridjs-head .export-btn:active {
+.btn-wrap .export-btn:not([disabled]):active {
     background-color: #0039D7;
     border-color: #0039D7;
 }
-
 
 /*table .gridjs-tbody {*/
 /*    display: block;*/
