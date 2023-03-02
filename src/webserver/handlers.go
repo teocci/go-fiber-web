@@ -9,13 +9,14 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
 )
 
 const (
 	imgURLFormat = "https://images.wbstatic.net/shops/%s_logo.jpg"
-	imgDirPath   = "./web/static/img"
+	imgEmptyPath = "./web/static/img/seller-empty-logo.jpg"
 )
 
 var (
@@ -26,13 +27,31 @@ var (
 	}
 )
 
-func HandleLogoImage(c *fiber.Ctx) error {
-	profileID := c.Params("id")
-	url := fmt.Sprintf(imgURLFormat, profileID)
+func handleSellerView(c *fiber.Ctx) error {
+	sellerID := c.Params("id")
+	limit := c.QueryInt("limit")
+	page := PageInfo{
+		Name:       "seller",
+		SupplierID: sellerID,
+		Limit:      limit,
+	}
 
-	image, err := fetchLogoImage(profileID)
+	return c.Render("seller", fiber.Map{
+		"page": page,
+	})
+}
+
+func handleLogoImage(c *fiber.Ctx) error {
+	sellerID := c.Params("id")
+	url := fmt.Sprintf(imgURLFormat, sellerID)
+
+	image, err := fetchLogoImage(sellerID)
 	if err != nil {
-		return c.SendStatus(fiber.StatusInternalServerError)
+		url = imgEmptyPath
+		image, err = ioutil.ReadFile(url)
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
 	}
 
 	extension := filepath.Ext(url)

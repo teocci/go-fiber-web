@@ -32,7 +32,7 @@ export default class SellerDetail extends BaseComponent {
         $logo.classList.add('logo')
 
         const $img = document.createElement('img')
-        $img.src = '/img/seller-logo-new.jpg'
+        $img.src = '/img/seller-empty-logo.jpg'
         $img.width = '120'
         $img.height = '50'
 
@@ -90,7 +90,9 @@ export default class SellerDetail extends BaseComponent {
     initListeners() {}
 
     fetchSeller() {
-        fetch('/api/v1/seller/25169')
+        const supplierId = pageInfo.supplierId
+        const url = `/api/v1/seller/${supplierId}`
+        fetch(url)
             .then(res => res.json())
             .then(d => {
                     const seller = d.data

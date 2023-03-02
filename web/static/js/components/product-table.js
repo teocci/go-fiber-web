@@ -173,7 +173,11 @@ export default class ProductTable extends BaseComponent {
     initListeners() {}
 
     fetchProducts() {
-        fetch('/api/v1/products/seller/25169')
+        const supplierId = pageInfo.supplierId
+        const limit = pageInfo.limit > 0 ? `?limit=${pageInfo.limit}` : ''
+
+        const url = `/api/v1/products/seller/${supplierId}${limit}`
+        fetch(url)
             .then(res => {
                 // no matching records found
                 if (res.status === 404) return {data: []}

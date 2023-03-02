@@ -6,17 +6,17 @@ package webserver
 import (
 	"embed"
 	"fmt"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/teocci/go-fiber-web/src/webserver/apictrlr"
 	"log"
 	"mime"
 	"net"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/template/html"
 
 	"github.com/teocci/go-fiber-web/src/config"
+	"github.com/teocci/go-fiber-web/src/webserver/apictrlr"
 )
 
 const (
@@ -42,8 +42,9 @@ func Start() {
 
 	engine := html.New("./views", ".tmpl")
 	router := fiber.New(fiber.Config{
-		Views:   engine,
-		Network: "tcp4",
+		Views:       engine,
+		ViewsLayout: "layouts/base",
+		Network:     "tcp4",
 	})
 
 	indexRoute := fmt.Sprintf(formatRelativePath, defaultPage)
@@ -62,7 +63,8 @@ func Start() {
 		ExposeHeaders:    "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type",
 	}))
 
-	router.Get("/seller/logo/:id", HandleLogoImage)
+	router.Get("/seller/logo/:id", handleLogoImage)
+	router.Get("/seller/:id", handleSellerView)
 
 	api := router.Group("/api/v1")
 	api.Get("/seller/:id", apictrlr.HandleSeller)

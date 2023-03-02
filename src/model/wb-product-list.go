@@ -105,12 +105,14 @@ func (pr *ProductListResponse) GetJSON(supplierID string, page int) (err error) 
 	return err
 }
 
-func (pr *ProductListResponse) GetAll(supplierID string) (err error) {
+func (pr *ProductListResponse) GetAll(supplierID string, limit int) (err error) {
 	filter := ProductFilterResponse{}
 	err = filter.GetJSON(supplierID)
 	if err != nil {
 		return err
 	}
+
+	useLimit := limit > 1
 
 	page := 1
 	totalPages := int(math.Ceil(float64(filter.Data.Total) / float64(totalPerPage)))
@@ -138,10 +140,9 @@ func (pr *ProductListResponse) GetAll(supplierID string) (err error) {
 			continue
 		}
 
-		_ = i
-		//if i > 5 {
-		//	break
-		//}
+		if useLimit && i > limit {
+			break
+		}
 
 		identical := IdenticalProductsResponse{}
 		err = identical.GetJSON(strconv.Itoa(p.Id))

@@ -5,9 +5,9 @@ import SellerDetail from '../components/seller-detail.js'
  * Created by RTT.
  * Author: teocci@yandex.com on 2022-8월-29
  */
-export default class MainModule {
+export default class SellerModule {
     static get instance() {
-        this._instance = this._instance ?? new MainModule()
+        this._instance = this._instance ?? new SellerModule()
 
         return this._instance
     }
