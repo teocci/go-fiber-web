@@ -159,6 +159,10 @@ export default class ProductTable extends BaseComponent {
             ],
             search: true,
             sort: true,
+            pagination: {
+                limit: 10,
+                summary: true,
+            },
             data: () => new Promise((resolve) => {
                 this.resolver = resolve
             }),
@@ -192,6 +196,9 @@ export default class ProductTable extends BaseComponent {
 
                 this.data = []
                 for (const product of d.data.products) {
+                    const {identical} = product
+                    if (isNil(identical)) continue
+
                     const item = {
                         id: product.id,
                         name: product.name,
@@ -202,7 +209,7 @@ export default class ProductTable extends BaseComponent {
                         competitors: [],
                     }
 
-                    for (const idem of product.identical) {
+                    for (const idem of identical) {
                         const competitor = {
                             id: idem.supplierInfo.id,
                             name: idem.supplierInfo.name,
