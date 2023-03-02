@@ -67,6 +67,8 @@ export default class ProductTable extends BaseComponent {
         this.resolver = null
         this._state = new ObservableObject()
 
+        this.data = null
+
         this.state = STATE_INIT
 
         this.initElements()
@@ -186,13 +188,37 @@ export default class ProductTable extends BaseComponent {
                 throw Error('oh no :(')
             })
             .then(d => {
-                    const data = d.data.products.map(product => [product.id, product.name, product.priceU / 100, product.salePriceU / 100, product])
+                const data = d.data.products.map(product => [product.id, product.name, product.priceU / 100, product.salePriceU / 100, product])
 
-                    this.state = data.length > 0 ? STATE_DATA_LOADED : STATE_DATA_EMPTY
+                this.data = []
+                for (const product of d.data.products) {
+                    const item = {
+                        id: product.id,
+                        name: product.name,
+                        prices: {
+                            base: product.priceU / 100,
+                            sale: product.salePriceU / 100,
+                        },
+                        competitors: [],
+                    }
 
-                    this.resolver(data)
-                },
-            )
+                    for (const idem of product.identical) {
+                        const competitor = {
+                            id: idem.supplierInfo.id,
+                            name: idem.supplierInfo.name,
+                            base: idem.priceU / 100,
+                            sale: idem.salePriceU / 100,
+                        }
+                        item.competitors.push(competitor)
+                    }
+
+                    this.data.push(item)
+                }
+
+                this.state = data.length > 0 ? STATE_DATA_LOADED : STATE_DATA_EMPTY
+
+                this.resolver(data)
+            })
     }
 
     createProduct($wrapper) {
@@ -286,13 +312,50 @@ export default class ProductTable extends BaseComponent {
     }
 
     exportTableToXlsx() {
-        const $table = document.querySelector('.gridjs-table')
-        if (isNil($table)) return
+        const supplierId = pageInfo.supplierId
+        const data = this.data
+        if (isNil(data)) return
 
         const date = todayToYYYYMMDD()
-        const file = `${date}-${MAIN_SUPPLIER}.xlsx`
+        const file = `${date}-${supplierId}.xlsx`
 
-        const wb = XLSX.utils.table_to_book($table, {sheet: 'Sheet JS'})
-        return XLSX.writeFile(wb, file)
+        console.log({data})
+        const header = ['ID', 'Name', 'Prices', '', 'Competitors', '', '', '']
+        const subHeader = ['', '', 'Base', 'Sale', 'ID', 'Name', 'Base', 'Sale']
+        const rows = []
+
+        data.forEach((supplier) => {
+            const {id, name, prices, competitors} = supplier
+            const row = [
+                id,
+                name,
+                prices.base,
+                prices.sale,
+            ]
+
+            competitors.forEach((competitor) => {
+                row.push(
+                    competitor.id,
+                    competitor.name,
+                    competitor.base,
+                    competitor.sale,
+                )
+                rows.push(row.slice()) // create a copy of row to avoid changing the original array
+                row.splice(4) // remove the supplier data from the row
+            })
+        })
+
+        const worksheet = XLSX.utils.aoa_to_sheet([header, subHeader, ...rows])
+        worksheet['!merges'] = [
+            {s: {r: 0, c: 0}, e: {r: 1, c: 0}},
+            {s: {r: 0, c: 1}, e: {r: 1, c: 1}},
+            {s: {r: 0, c: 2}, e: {r: 0, c: 3}},
+            {s: {r: 0, c: 4}, e: {r: 0, c: 7}},
+        ]
+
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(workbook, worksheet, `${supplierId}`)
+
+        return XLSX.writeFile(workbook, file)
     }
 }
