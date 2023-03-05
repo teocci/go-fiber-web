@@ -5,11 +5,13 @@ package model
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const totalPerPage = 100
@@ -119,21 +121,18 @@ func (pr *ProductListResponse) GetAll(supplierID string, limit int) (err error) 
 	pr.Data.Products = make([]ProductLR, 0)
 	raw := make([]ProductLR, 0)
 
+	wg := &sync.WaitGroup{}
 	for page <= totalPages {
-		tmp := ProductListResponse{}
-		err := tmp.GetJSON(supplierID, page)
-		if err != nil {
-			return err
-		}
-
-		length := len(tmp.Data.Products)
-		if length == 0 {
-			return err
-		}
-
-		raw = append(raw, tmp.Data.Products...)
+		wg.Add(1)
+		go func() {
+			var tmp []ProductLR
+			tmp, err = fetchProductListByPage(supplierID, page)
+			raw = append(raw, tmp...)
+			wg.Done()
+		}()
 		page++
 	}
+	wg.Wait()
 
 	for i, p := range raw {
 		if p.Id == 120793222 {
@@ -179,4 +178,20 @@ func (pr *ProductListResponse) GetAll(supplierID string, limit int) (err error) 
 	}
 
 	return err
+}
+
+func fetchProductListByPage(supplierID string, page int) (raw []ProductLR, err error) {
+	tmp := ProductListResponse{}
+	err = tmp.GetJSON(supplierID, page)
+	if err != nil {
+		return nil, err
+	}
+
+	raw = tmp.Data.Products
+	length := len(tmp.Data.Products)
+	if length == 0 {
+		return nil, errors.New("no products")
+	}
+
+	return raw, nil
 }
