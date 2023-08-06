@@ -6,6 +6,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/url"
 )
 
@@ -37,7 +38,9 @@ func (sr *SellerResponse) GetJSON(sellerID string) (err error) {
 	if err != nil {
 		return err
 	}
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(r.Body)
 
 	err = json.NewDecoder(r.Body).Decode(&sr)
 

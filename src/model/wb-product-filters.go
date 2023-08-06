@@ -26,14 +26,8 @@ type ProductFilterResponse struct {
 			MaxPriceU   int  `json:"maxPriceU,omitempty"`
 			Multiselect int  `json:"multiselect,omitempty"`
 		} `json:"filters"`
-		Previews struct {
-			Field1 int `json:"1952"`
-			Field2 int `json:"3021"`
-			Field3 int `json:"356"`
-			Field4 int `json:"96"`
-			Field5 int `json:"341"`
-		} `json:"previews"`
-		Total int `json:"total"`
+		Previews map[int64]int64 `json:"previews"`
+		Total    int             `json:"total"`
 	} `json:"data"`
 }
 

@@ -78,14 +78,14 @@ func (pr *ProductListResponse) GetJSON(supplierID string, page int) (err error) 
 
 	params := baseURL.Query()
 	params.Set("appType", "1")
-	params.Set("couponsGeo", "12,3,18,15,21")
+	//params.Set("couponsGeo", "12,3,18,15,21")
 	params.Set("curr", "rub")
 	params.Set("dest", "-1257786")
-	params.Set("emp", "0")
-	params.Set("lang", "ru")
-	params.Set("locale", "ru")
-	params.Set("pricemarginCoeff", "1.0")
-	params.Set("reg", "0")
+	//params.Set("emp", "0")
+	//params.Set("lang", "ru")
+	//params.Set("locale", "ru")
+	//params.Set("pricemarginCoeff", "1.0")
+	//params.Set("reg", "0")
 	params.Set("regions", "80,64,38,4,83,33,68,70,69,30,86,75,40,1,22,66,31,48,110,71")
 	params.Set("sort", "popular")
 	params.Set("spp", "0")
@@ -118,18 +118,20 @@ func (pr *ProductListResponse) GetAll(supplierID string, limit int) (err error) 
 
 	page := 1
 	totalPages := int(math.Ceil(float64(filter.Data.Total) / float64(totalPerPage)))
+	fmt.Printf("%+v, %+v, , %+v\n", filter.Data.Total, totalPerPage, totalPages)
+
 	pr.Data.Products = make([]ProductLR, 0)
 	raw := make([]ProductLR, 0)
 
 	wg := &sync.WaitGroup{}
 	for page <= totalPages {
 		wg.Add(1)
-		go func() {
+		go func(page int) {
 			var tmp []ProductLR
 			tmp, err = fetchProductListByPage(supplierID, page)
 			raw = append(raw, tmp...)
 			wg.Done()
-		}()
+		}(page)
 		page++
 	}
 	wg.Wait()
