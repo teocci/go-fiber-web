@@ -65,6 +65,7 @@ func Start() {
 
 	router.Get("/seller/logo/:id", handleLogoImage)
 	router.Get("/seller/:id", handleSellerView)
+	router.Get("/position/:id", handlePositionView)
 
 	api := router.Group("/api/v1")
 	api.Get("/seller/:id", apictrlr.HandleSeller)
@@ -84,7 +85,9 @@ func GetLocalIp() string {
 	if err != nil {
 		return "localhost"
 	}
-	defer conn.Close()
+	defer func(conn net.Conn) {
+		_ = conn.Close()
+	}(conn)
 
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 
@@ -96,6 +99,7 @@ func addressFormat(a string) string {
 	if s[0] == "" {
 		s[0] = GetLocalIp()
 	}
+
 	return strings.Join(s[:], ":")
 }
 

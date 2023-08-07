@@ -56,9 +56,7 @@ export default class ProductTable extends BaseComponent {
     static STATE_DATA_LOADED = STATE_DATA_LOADED
     static STATE_DATA_EMPTY = STATE_DATA_EMPTY
 
-    /**
-     * {ObservableObject}
-     */
+    /** {ObservableObject} */
     _state
 
     constructor(element) {
@@ -71,8 +69,8 @@ export default class ProductTable extends BaseComponent {
 
         this.state = STATE_INIT
 
-        this.initElements()
-        this.initListeners()
+        this.initProductTableElements()
+        this.initProductTableListeners()
 
         this.fetchProducts()
     }
@@ -89,7 +87,7 @@ export default class ProductTable extends BaseComponent {
         this._state.onchange = fn
     }
 
-    initElements() {
+    initProductTableElements() {
         const $wrapper = document.createElement('div')
         $wrapper.classList.add('products', 'module-wrapper')
 
@@ -176,7 +174,7 @@ export default class ProductTable extends BaseComponent {
         this.domWithHolderUpdate = $wrapper
     }
 
-    initListeners() {}
+    initProductTableListeners() {}
 
     fetchProducts() {
         const supplierId = pageInfo.supplierId

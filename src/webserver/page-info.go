@@ -5,6 +5,7 @@ package webserver
 
 type PageInfo struct {
 	Name       string `json:"name"`
+	Controller string `json:"controller"`
 	Action     string `json:"action,omitempty"`
 	Tab        string `json:"tab,omitempty"`
 	SupplierID string `json:"supplier_id,omitempty"`

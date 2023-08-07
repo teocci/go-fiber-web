@@ -2,7 +2,7 @@
     <link href="https://unpkg.com/gridjs/dist/theme/mermaid.css" rel="stylesheet"/>
 {{ end }}
 {{ define "styles" }}
-    <link rel="stylesheet" href="/css/seller.css">
+    <link rel="stylesheet" href="/css/{{ .page.Controller }}.css">
 {{ end }}
 {{ define "g-scripts" }}
     <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js" defer></script>
@@ -12,5 +12,5 @@
 {{ define "scripts" }}
 {{ end }}
 {{ define "modules" }}
-    <script type="module" src="/js/seller.js"></script>
+    <script type="module" src="/js/{{ .page.Controller }}.js"></script>
 {{ end }}

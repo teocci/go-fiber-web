@@ -7,11 +7,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/gofiber/fiber/v2"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 const (
@@ -27,18 +28,28 @@ var (
 	}
 )
 
+func handlePositionView(c *fiber.Ctx) error {
+	sellerID := c.Params("id")
+	page := PageInfo{
+		Name:       "position",
+		Controller: "position",
+		SupplierID: sellerID,
+	}
+
+	return renderPage(c, page)
+}
+
 func handleSellerView(c *fiber.Ctx) error {
 	sellerID := c.Params("id")
 	limit := c.QueryInt("limit")
 	page := PageInfo{
 		Name:       "seller",
+		Controller: "seller",
 		SupplierID: sellerID,
 		Limit:      limit,
 	}
 
-	return c.Render("seller", fiber.Map{
-		"page": page,
-	})
+	return renderPage(c, page)
 }
 
 func handleLogoImage(c *fiber.Ctx) error {
@@ -48,7 +59,7 @@ func handleLogoImage(c *fiber.Ctx) error {
 	image, err := fetchLogoImage(sellerID)
 	if err != nil {
 		url = imgEmptyPath
-		image, err = ioutil.ReadFile(url)
+		image, err = os.ReadFile(url)
 		if err != nil {
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
