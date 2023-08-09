@@ -231,7 +231,7 @@ const todayToYYYYMMDD = () => {
     const formatter = new Intl.DateTimeFormat('ko-KR', options)
     const parts = formatter.formatToParts(currentDate)
 
-    return `${parts[0].value}-${parts[2].value}-${parts[4].value}`
+    return `${parts[0]?.value}-${parts[2]?.value}-${parts[4]?.value}`
 }
 
 const utcToKRTime = utcDateString => {
@@ -272,6 +272,64 @@ const watchVariable = (o, handler) => {
             return true
         },
     })
+}
+const fetcherGET = async url => {
+    const options = {
+        method: 'GET',
+        credentials: 'include',
+    }
+
+    const response = await fetch(url, options)
+    return await response.json()
+}
+
+const downloadURL = (url, filename) => {
+    const $link = document.createElement('a')
+    if ($link.download === undefined) return
+
+    $link.href = url
+    $link.download = filename
+    $link.style.visibility = 'hidden'
+    $link.click()
+}
+
+// Check if item exists in local storage
+const existsInLocalStorage = k => {
+    return localStorage.getItem(k) !== null
+}
+
+// Save data to local storage
+const toLocalStorage = (key, data) => {
+    localStorage.setItem(key, JSON.stringify(data))
+}
+
+// Retrieve data from local storage
+const fromLocalStorage = k => {
+    const data = localStorage.getItem(k)
+    return JSON.parse(data)
+}
+
+// Delete data from local storage
+const removeFromLocalStorage = k => {
+    localStorage.removeItem(k)
+}
+
+// Clear all data from local storage
+const clearLocalStorage = () => {
+    localStorage.clear()
+}
+
+const encodeId = (id, b = 'station') => `${b}-${id}`
+
+const decodeId = k => {
+    const regex = /(?<id>\d+)/
+    const {groups: {id}} = regex.exec(k) ?? {}
+
+    return id ? parseInt(id) : null
+}
+
+const mergeArraysWD = (a, b) => {
+    return [...new Set([...(a ?? []), ...b ?? []])]
 }
 
 function serializeDate() {

@@ -1,5 +1,6 @@
 import ProductTable from '../components/product-table.js'
 import SellerDetail from '../components/seller-detail.js'
+import ModeSelector from '../components/mode-selector.js'
 
 /**
  * Created by RTT.
@@ -25,10 +26,12 @@ export default class PositionModule {
 
     initElement() {
         this.placeholder = document.getElementById('main')
-        const $placeholder = this.placeholder
 
-        this.seller = new SellerDetail($placeholder)
-        // this.products = new ProductTable($placeholder)
+        const $main = this.placeholder
+
+        this.seller = new SellerDetail($main)
+        this.table = new ModeSelector($main)
+        // this.products = new ProductTable($main)
     }
 
     initListeners() {

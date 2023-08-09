@@ -5,6 +5,12 @@
 import BaseListener from './base-listener.js'
 
 export default class BaseComponent extends BaseListener {
+    /** @type {HTMLElement} */
+    $element
+
+    /** @type {HTMLElement} */
+    $placeholder
+
     constructor($element) {
         super()
 
@@ -13,24 +19,34 @@ export default class BaseComponent extends BaseListener {
         this.$placeholder = $element ?? null
     }
 
+    /**
+     * Returns the holder element of the component.
+     *
+     * @return {HTMLElement}
+     */
     get holder() {
         return this.$placeholder
+    }
+
+    /**
+     * Returns the element of the component.
+     *
+     * @return {HTMLElement}
+     */
+    get dom() {
+        return this.$element
+    }
+
+    get tag() {
+        return this.constructor.TAG
     }
 
     set holder($holder) {
         this.$placeholder = $holder
     }
 
-    get dom() {
-        return this.$element
-    }
-
     set dom($element) {
         this.$element = $element
-    }
-
-    get tag() {
-        return this.constructor.TAG
     }
 
     set domWithHolderUpdate($element) {
