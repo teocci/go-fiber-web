@@ -9,7 +9,7 @@ import (
 	"net/url"
 )
 
-type ProductFilterResponse struct {
+type FilterResponse struct {
 	State int `json:"state"`
 	Data  struct {
 		Filters []struct {
@@ -31,7 +31,7 @@ type ProductFilterResponse struct {
 	} `json:"data"`
 }
 
-func (pfr *ProductFilterResponse) GetJSON(supplierID string) (err error) {
+func (pfr *FilterResponse) GetJSON(supplierID string) (err error) {
 	baseURL := &url.URL{
 		Scheme: "https",
 		Host:   "catalog.wb.ru",
@@ -40,15 +40,10 @@ func (pfr *ProductFilterResponse) GetJSON(supplierID string) (err error) {
 
 	params := baseURL.Query()
 	params.Set("appType", "1")
-	params.Set("couponsGeo", "12,3,18,15,21")
 	params.Set("curr", "rub")
 	params.Set("dest", "-1257786")
-	params.Set("emp", "0")
-	params.Set("lang", "ru")
-	params.Set("locale", "ru")
-	params.Set("pricemarginCoeff", "1.0")
 	params.Set("reg", "0")
-	params.Set("regions", "80,64,38,4,83,33,68,70,69,30,86,75,40,1,22,66,31,48,110,71")
+	params.Set("regions", "80,38,83,4,64,33,68,70,30,40,86,75,69,22,1,31,66,110,48,71,114")
 	params.Set("spp", "0")
 	params.Set("supplier", supplierID)
 	baseURL.RawQuery = params.Encode()

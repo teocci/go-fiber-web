@@ -108,7 +108,7 @@ func (pr *ProductListResponse) GetJSON(supplierID string, page int) (err error) 
 }
 
 func (pr *ProductListResponse) GetAll(supplierID string, limit int) (err error) {
-	filter := ProductFilterResponse{}
+	filter := FilterResponse{}
 	err = filter.GetJSON(supplierID)
 	if err != nil {
 		return err

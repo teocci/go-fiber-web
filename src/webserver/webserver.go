@@ -16,7 +16,7 @@ import (
 	"github.com/gofiber/template/html"
 
 	"github.com/teocci/go-fiber-web/src/config"
-	"github.com/teocci/go-fiber-web/src/webserver/apictrlr"
+	"github.com/teocci/go-fiber-web/src/webserver/apicontroller"
 )
 
 const (
@@ -68,9 +68,11 @@ func Start() {
 	router.Get("/position/:id", handlePositionView)
 
 	api := router.Group("/api/v1")
-	api.Get("/seller/:id", apictrlr.HandleSeller)
-	api.Get("/products/seller/:id", apictrlr.HandleProductList)
-	api.Get("/identical/:id", apictrlr.HandleIdentical)
+	api.Get("/seller/:id", apicontroller.HandleSeller)
+	api.Get("/filter/seller/:id", apicontroller.HandleFilter)
+	api.Get("/filter/category/:id", apicontroller.HandleFilter)
+	api.Get("/products/seller/:id", apicontroller.HandleProductList)
+	api.Get("/identical/:id", apicontroller.HandleIdentical)
 
 	fmt.Println("[url]", urlFormat(address))
 

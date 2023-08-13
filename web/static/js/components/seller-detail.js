@@ -90,8 +90,8 @@ export default class SellerDetail extends BaseComponent {
     initListeners() {}
 
     fetchSeller() {
-        const supplierId = pageInfo.supplierId
-        const url = `/api/v1/seller/${supplierId}`
+        const sellerId = pageInfo.sellerId
+        const url = `/api/v1/seller/${sellerId}`
         fetch(url)
             .then(res => res.json())
             .then(d => {
@@ -105,11 +105,11 @@ export default class SellerDetail extends BaseComponent {
         this.seller = seller
 
         this.$name.textContent = seller.name
-        this.$trademark.textContent = seller.trademark
-        this.$legalAddress.textContent = seller.legalAddress
+        this.$trademark.textContent = seller?.trademark
+        this.$legalAddress.textContent = seller?.legalAddress
 
-        this.$logo.src = `/seller/logo/${seller.id}`
-        this.$logo.alt = seller.fineName
+        this.$logo.src = `/seller/logo/${seller?.id}`
+        this.$logo.alt = seller?.fineName
     }
 
     enableButton() {

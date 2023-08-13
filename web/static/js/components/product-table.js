@@ -14,39 +14,45 @@ const STATE_INIT = 0
 const STATE_DATA_LOADED = 1
 const STATE_DATA_EMPTY = 2
 
-const MAIN_SUPPLIER = 25169
+const MAIN_SELLER = 25169
 
-const BOX_SUPPLIER = 'supplier'
-const BOX_PRODUCT = 'product'
-const BOX_PRICES = 'prices'
+const BOX_KEY_SELLER = 'seller'
+const BOX_KEY_PRODUCT = 'product'
+const BOX_KEY_PRICES = 'prices'
 
-const BOXES = {
-    [BOX_SUPPLIER]: {
-        id: BOX_SUPPLIER,
-        label: 'Supplier',
-    },
-    [BOX_PRODUCT]: {
-        id: BOX_PRODUCT,
-        label: 'Product',
-    },
-    [BOX_PRICES]: {
-        id: BOX_PRICES,
-        label: 'Prices',
-    },
+const BOX_SELLER = {
+    id: BOX_KEY_SELLER,
+    label: 'Seller',
+}
+const BOX_PRODUCT = {
+    id: BOX_KEY_PRODUCT,
+    label: 'Product',
+}
+const BOX_PRICES = {
+    id: BOX_KEY_PRICES,
+    label: 'Prices',
 }
 
-const PRICE_BASE = 'base'
-const PRICE_SALE = 'sale'
+const BOXES = {
+    [BOX_KEY_SELLER]: BOX_SELLER,
+    [BOX_KEY_PRODUCT]: BOX_PRODUCT,
+    [BOX_KEY_PRICES]: BOX_PRICES,
+}
 
+const PRICE_KEY_BASE = 'base'
+const PRICE_KEY_SALE = 'sale'
+
+const PRICE_BASE = {
+    id: PRICE_KEY_BASE,
+    label: 'Base',
+}
+const PRICE_SALE = {
+    id: PRICE_KEY_SALE,
+    label: 'Sale',
+}
 const PRICES = {
-    [PRICE_BASE]: {
-        id: PRICE_BASE,
-        label: 'Base',
-    },
-    [PRICE_SALE]: {
-        id: PRICE_SALE,
-        label: 'Sale',
-    },
+    [PRICE_KEY_BASE]: PRICE_BASE,
+    [PRICE_KEY_SALE]: PRICE_SALE,
 }
 
 export default class ProductTable extends BaseComponent {
@@ -129,19 +135,19 @@ export default class ProductTable extends BaseComponent {
                         for (const product of identical) {
                             const boxes = this.createProduct($wrapper)
 
-                            const $supplier = boxes.get(BOX_SUPPLIER).querySelector('.value')
-                            this.createBoxInfo($supplier, product.supplierInfo, 'sv-item')
+                            const $seller = boxes.get(BOX_KEY_SELLER).querySelector('.value')
+                            this.createBoxInfo($seller, product.supplierInfo, 'sv-item')
 
-                            const $product = boxes.get(BOX_PRODUCT).querySelector('.value')
+                            const $product = boxes.get(BOX_KEY_PRODUCT).querySelector('.value')
                             this.createBoxInfo($product, product, 'pv-item')
 
-                            const $prices = boxes.get(BOX_PRICES).querySelector('.value')
+                            const $prices = boxes.get(BOX_KEY_PRICES).querySelector('.value')
                             const values = {
-                                [PRICE_BASE]: {
+                                [PRICE_KEY_BASE]: {
                                     value: product.priceU,
                                     lower: product.priceU < cell.priceU,
                                 },
-                                [PRICE_SALE]: {
+                                [PRICE_KEY_SALE]: {
                                     value: product.salePriceU,
                                     lower: product.salePriceU < cell.salePriceU,
                                 },
@@ -174,13 +180,14 @@ export default class ProductTable extends BaseComponent {
         this.domWithHolderUpdate = $wrapper
     }
 
-    initProductTableListeners() {}
+    initProductTableListeners() {
+    }
 
     fetchProducts() {
-        const supplierId = pageInfo.supplierId
+        const sellerId = pageInfo.sellerId
         const limit = pageInfo.limit > 0 ? `?limit=${pageInfo.limit}` : ''
 
-        const url = `/api/v1/products/seller/${supplierId}${limit}`
+        const url = `/api/v1/products/seller/${sellerId}${limit}`
         fetch(url)
             .then(res => {
                 // no matching records found
@@ -317,20 +324,20 @@ export default class ProductTable extends BaseComponent {
     }
 
     exportTableToXlsx() {
-        const supplierId = pageInfo.supplierId
+        const sellerId = pageInfo.sellerId
         const data = this.data
         if (isNil(data)) return
 
         const date = todayToYYYYMMDD()
-        const file = `${date}-${supplierId}.xlsx`
+        const file = `${date}-${sellerId}.xlsx`
 
         console.log({data})
         const header = ['ID', 'Name', 'Prices', '', 'Competitors', '', '', '']
         const subHeader = ['', '', 'Base', 'Sale', 'ID', 'Name', 'Base', 'Sale']
         const rows = []
 
-        data.forEach((supplier) => {
-            const {id, name, prices, competitors} = supplier
+        data.forEach((seller) => {
+            const {id, name, prices, competitors} = seller
             const row = [
                 id,
                 name,
@@ -346,7 +353,7 @@ export default class ProductTable extends BaseComponent {
                     competitor.sale,
                 )
                 rows.push(row.slice()) // create a copy of row to avoid changing the original array
-                row.splice(4) // remove the supplier data from the row
+                row.splice(4) // remove the seller data from the row
             })
         })
 
@@ -359,7 +366,7 @@ export default class ProductTable extends BaseComponent {
         ]
 
         const workbook = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(workbook, worksheet, `${supplierId}`)
+        XLSX.utils.book_append_sheet(workbook, worksheet, `${sellerId}`)
 
         return XLSX.writeFile(workbook, file)
     }

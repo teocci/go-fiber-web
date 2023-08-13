@@ -1,7 +1,7 @@
-// Package apictrlr
+// Package apicontroller
 // Created by Teocci.
 // Author: teocci@yandex.com on 2023-Feb-27
-package apictrlr
+package apicontroller
 
 import (
 	"fmt"
@@ -18,6 +18,10 @@ func HandleProductList(c *fiber.Ctx) error {
 			"error": "Invalid seller id: null",
 		})
 	}
+
+	//if limit == 0 {
+	//	limit = 10
+	//}
 
 	products := model.ProductListResponse{}
 	err := products.GetAll(supplierID, limit)

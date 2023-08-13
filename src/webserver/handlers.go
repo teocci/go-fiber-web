@@ -33,7 +33,7 @@ func handlePositionView(c *fiber.Ctx) error {
 	page := PageInfo{
 		Name:       "position",
 		Controller: "position",
-		SupplierID: sellerID,
+		SellerID:   sellerID,
 	}
 
 	return renderPage(c, page)
@@ -45,7 +45,7 @@ func handleSellerView(c *fiber.Ctx) error {
 	page := PageInfo{
 		Name:       "seller",
 		Controller: "seller",
-		SupplierID: sellerID,
+		SellerID:   sellerID,
 		Limit:      limit,
 	}
 

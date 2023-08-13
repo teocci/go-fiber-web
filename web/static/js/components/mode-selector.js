@@ -45,6 +45,7 @@ const CATEGORY_FEMALE = {
     url: '/catalog/krasota/parfyumeriya/zhenskie-aromaty',
     shard: 'beauty4',
     query: 'cat=9000',
+    default: true,
 }
 const CATEGORY_MALE = {
     key: CATEGORY_KEY_MALE,
@@ -85,6 +86,18 @@ export default class ModeSelector extends BaseComponent {
     /** @type {Map<string, HTMLElement>} */
     buttonsMap = new Map()
 
+    /** @type {Map<string, HTMLElement>} */
+    inputsMap = new Map()
+
+    /** @type {HTMLElement} */
+    $bWrapper
+
+    /** @type {HTMLElement} */
+    $rWrapper
+
+    /** @type {HTMLElement} */
+    $fWrapper
+
     constructor($element) {
         super($element)
 
@@ -101,7 +114,7 @@ export default class ModeSelector extends BaseComponent {
      *
      * @returns {HTMLElement[]}
      */
-    get buttons() {
+    get modes() {
         return this.buttonsMap.values() ?? []
     }
 
@@ -110,17 +123,8 @@ export default class ModeSelector extends BaseComponent {
      *
      * @returns {string[]}
      */
-    get keys() {
+    get modeKeys() {
         return this.buttonsMap.keys() ?? []
-    }
-
-    /**
-     * Returns the mode buttons of the component.
-     *
-     * @returns {HTMLElement[]}
-     */
-    get modes() {
-        return [...this.buttons].filter($btn => OPTION_MODE_KEYS.includes($btn.dataset.key))
     }
 
     /**
@@ -129,7 +133,7 @@ export default class ModeSelector extends BaseComponent {
      * @returns {HTMLElement[]}
      */
     get categories() {
-        return [...this.buttons].filter($btn => CATEGORY_KEYS.includes($btn.dataset.key))
+        return this.inputsMap.values() ?? []
     }
 
     initModeSelectorElements() {
@@ -137,25 +141,46 @@ export default class ModeSelector extends BaseComponent {
         $component.classList.add(TAG, 'component-wrapper')
 
         const $bWrapper = document.createElement('div')
-        $bWrapper.classList.add('buttons-list', 'bl-wrapper')
+        $bWrapper.classList.add('buttons-list', 'list-wrapper', 'cw-part')
+
+        const $rWrapper = document.createElement('div')
+        $rWrapper.classList.add('radios-list', 'list-wrapper', 'cw-part')
+
+        const $fWrapper = document.createElement('div')
+        $fWrapper.classList.add('filters-list', 'list-wrapper', 'cw-part')
 
         for (const item of OPTION_MODES) {
             const $btn = this.createButtonElement(item)
-            $component.appendChild($btn)
+            $bWrapper.appendChild($btn)
         }
 
         for (const item of CATEGORIES) {
-            const $btn = this.createButtonElement(item)
-            $component.appendChild($btn)
+            const $btn = this.createRadioElement(item)
+            $rWrapper.appendChild($btn)
         }
+
+        $component.append($bWrapper, $rWrapper, $fWrapper)
+
+        this.$bWrapper = $bWrapper
+        this.$rWrapper = $rWrapper
+        this.$fWrapper = $fWrapper
 
         this.domWithHolderUpdate = $component
     }
 
     initModeSelectorListeners() {
-        for (const $btn of this.buttons) {
+        for (const $btn of this.modes) {
             $btn.onclick = e => {
                 this.onButtonClick(e, $btn)
+            }
+        }
+
+        for (const $radio of this.categories) {
+            const $input = $radio.querySelector('input')
+            $input.onchange = e => {
+                const uid = $input.value
+                this.requestFilters('category', uid)
+                this.onCategoryChange(e, $radio)
             }
         }
     }
@@ -164,6 +189,7 @@ export default class ModeSelector extends BaseComponent {
         const $btn = document.createElement('button')
         $btn.classList.add(`bl-${item.key}`, 'bl-item', 'hidden')
         $btn.dataset.key = item.key
+        $btn.dataset.uid = item.uid
 
         if (!isNil(item.icon)) {
             const $icon = document.createElement('div')
@@ -183,6 +209,36 @@ export default class ModeSelector extends BaseComponent {
         this.buttonsMap.set(item.key, $btn)
 
         return $btn
+    }
+
+    createRadioElement(item) {
+        const $radio = document.createElement('div')
+        $radio.classList.add(`rl-${item.key}`, 'rl-item', 'hidden')
+        $radio.dataset.key = item.key
+        $radio.dataset.uid = item.uid
+
+        const suid = `category-${item.uid}`
+
+        const $input = document.createElement('input')
+        $input.classList.add('cat-input', 'field-part')
+        $input.type = 'radio'
+        $input.name = 'category'
+        $input.value = item.uid
+        $radio.dataset.key = item.key
+        $radio.dataset.uid = item.uid
+        $input.id = suid
+        if (item.default) $input.checked = true
+
+        const $label = document.createElement('label')
+        $label.classList.add('cat-label', 'field-part')
+        $label.htmlFor = suid
+        $label.textContent = item.label
+
+        $radio.append($input, $label)
+
+        this.inputsMap.set(item.key, $radio)
+
+        return $radio
     }
 
     showModes() {
@@ -218,12 +274,69 @@ export default class ModeSelector extends BaseComponent {
         switch (key) {
             case OPTION_MODE_KEY_COMPANY:
                 this.hideCategories()
+                this.requestFilters('seller', pageInfo.sellerId)
                 break
             case OPTION_MODE_KEY_CATEGORY:
+                const uid = $btn.dataset.uid
                 this.showCategories()
+                this.requestFilters('category', uid)
                 break
             default:
                 break
         }
+    }
+
+    updateFilters(data) {
+        if (isNil(data)) return
+
+        const {filters} = data
+        if (isNil(filters)) return
+
+        const $select = document.createElement('select')
+        $select.classList.add('selector')
+        $select.id = 'filter-selector'
+
+        for (const filter of filters) {
+            const $option = this.createFilterElement(filter)
+            $select.appendChild($option)
+        }
+    }
+
+    createFilterElement(item) {
+        const $option = document.createElement('option')
+        $option.classList.add(`bl-${item.key}`, 'bl-item', 'hidden')
+        $option.dataset.key = item.key
+        $option.value = item.uid
+        $option.textContent = item.label
+
+        return $option
+    }
+
+    requestFilters(action, id) {
+        const url = `/api/filters/${action}/${id}`
+
+        console.log('requestFilters', {url})
+
+        // this.fetchFilters(url).then(data => {
+        //     if (isNil(data)) return
+        //     this.updateFilters(data)
+        // }).catch(e => {
+        //     console.error(e)
+        // })
+    }
+
+    async fetchFilters(url) {
+        const response = await fetch(url)
+        if (!response.ok) return null
+        const data = await response.json()
+        if (isNil(data)) return null
+
+        return data
+    }
+
+    onCategoryChange(e, $radio) {
+        const key = $radio.dataset.key
+        const uid = $radio.dataset.uid
+        console.log('onCategoryChange', {key, uid})
     }
 }

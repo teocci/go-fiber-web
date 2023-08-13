@@ -1,7 +1,7 @@
-// Package apictrlr
+// Package apicontroller
 // Created by Teocci.
 // Author: teocci@yandex.com on 2023-Feb-27
-package apictrlr
+package apicontroller
 
 import (
 	"github.com/gofiber/fiber/v2"
