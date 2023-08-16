@@ -69,28 +69,68 @@ type ProductListResponse struct {
 	} `json:"data"`
 }
 
-func (pr *ProductListResponse) GetJSON(supplierID string, page int) (err error) {
-	baseURL := &url.URL{
-		Scheme: "https",
-		Host:   "catalog.wb.ru",
-		Path:   "/sellers/catalog",
+type ProductListRequest struct {
+	ID       string `json:"id"`
+	Mode     string `json:"mode"`
+	Xsubject int    `json:"xsubject"`
+	Page     int    `json:"page"`
+	Limit    int    `json:"limit"`
+}
+
+func (pr *ProductListResponse) GetJSON(req ProductListRequest) (err error) {
+	if req.ID == "" {
+		return fmt.Errorf("invalid id: null")
+	}
+
+	if req.Mode == "" {
+		req.Mode = ModeSeller
+	}
+
+	var baseURL *url.URL
+	switch req.Mode {
+	case ModeSeller:
+		baseURL = &url.URL{
+			Scheme: "https",
+			Host:   "catalog.wb.ru",
+			Path:   "/sellers/catalog",
+		}
+	case ModeCategory:
+		shard := "beauty3"
+		if req.ID == "9000" {
+			shard = "beauty4"
+		}
+
+		baseURL = &url.URL{
+			Scheme: "https",
+			Host:   "catalog.wb.ru",
+			Path:   fmt.Sprintf("/catalog/%s/catalog", shard),
+		}
 	}
 
 	params := baseURL.Query()
 	params.Set("appType", "1")
-	//params.Set("couponsGeo", "12,3,18,15,21")
 	params.Set("curr", "rub")
 	params.Set("dest", "-1257786")
+	params.Set("regions", "80,64,38,4,83,33,68,70,69,30,86,75,40,1,22,66,31,48,110,71")
+	params.Set("sort", "popular")
+	params.Set("spp", "0")
+	if req.Page > 1 {
+		params.Set("page", strconv.Itoa(req.Page))
+	}
+	//params.Set("couponsGeo", "12,3,18,15,21")
 	//params.Set("emp", "0")
 	//params.Set("lang", "ru")
 	//params.Set("locale", "ru")
 	//params.Set("pricemarginCoeff", "1.0")
 	//params.Set("reg", "0")
-	params.Set("regions", "80,64,38,4,83,33,68,70,69,30,86,75,40,1,22,66,31,48,110,71")
-	params.Set("sort", "popular")
-	params.Set("spp", "0")
-	params.Set("supplier", supplierID)
-	params.Set("page", strconv.Itoa(page))
+
+	switch req.Mode {
+	case ModeSeller:
+		params.Set("supplier", req.ID)
+	case ModeCategory:
+		params.Set("cat", req.ID)
+	}
+
 	baseURL.RawQuery = params.Encode()
 
 	apiURL := baseURL.String()
@@ -107,32 +147,44 @@ func (pr *ProductListResponse) GetJSON(supplierID string, page int) (err error) 
 	return err
 }
 
-func (pr *ProductListResponse) GetAll(supplierID string, limit int) (err error) {
+func (pr *ProductListResponse) GetAll(req ProductListRequest) (err error) {
+	if req.ID == "" {
+		return fmt.Errorf("invalid id: null")
+	}
+
+	if req.Mode == "" {
+		req.Mode = ModeSeller
+	}
+
+	fr := FilterRequest{
+		ID:   req.ID,
+		Mode: ModeSeller,
+	}
 	filter := FilterResponse{}
-	err = filter.GetJSON(supplierID)
+	err = filter.GetJSON(fr)
 	if err != nil {
 		return err
 	}
 
-	useLimit := limit > 1
+	useLimit := req.Limit > 1
 
-	page := 1
+	req.Page = 1
 	totalPages := int(math.Ceil(float64(filter.Data.Total) / float64(totalPerPage)))
-	fmt.Printf("%+v, %+v, , %+v\n", filter.Data.Total, totalPerPage, totalPages)
+	fmt.Printf("%+v, %+v, %+v\n", filter.Data.Total, totalPerPage, totalPages)
 
 	pr.Data.Products = make([]ProductLR, 0)
 	raw := make([]ProductLR, 0)
 
 	wg := &sync.WaitGroup{}
-	for page <= totalPages {
+	for req.Page <= totalPages {
 		wg.Add(1)
-		go func(page int) {
+		go func(request ProductListRequest) {
 			var tmp []ProductLR
-			tmp, err = fetchProductListByPage(supplierID, page)
+			tmp, err = fetchProductListByPage(request)
 			raw = append(raw, tmp...)
 			wg.Done()
-		}(page)
-		page++
+		}(req)
+		req.Page++
 	}
 	wg.Wait()
 
@@ -141,7 +193,7 @@ func (pr *ProductListResponse) GetAll(supplierID string, limit int) (err error) 
 			continue
 		}
 
-		if useLimit && i > limit {
+		if useLimit && i > req.Limit {
 			break
 		}
 
@@ -164,14 +216,14 @@ func (pr *ProductListResponse) GetAll(supplierID string, limit int) (err error) 
 		err = identicalProducts.GetJSON(ids)
 
 		products := identicalProducts.Data.Products
-		for i, prod := range products {
+		for j, prod := range products {
 			seller := SellerResponse{}
 			err = seller.GetJSON(strconv.Itoa(prod.SupplierId))
 			if err != nil {
 				return err
 			}
 
-			products[i].SupplierInfo = seller
+			products[j].SupplierInfo = seller
 		}
 
 		p.Identical = append(p.Identical, products...)
@@ -182,9 +234,9 @@ func (pr *ProductListResponse) GetAll(supplierID string, limit int) (err error) 
 	return err
 }
 
-func fetchProductListByPage(supplierID string, page int) (raw []ProductLR, err error) {
+func fetchProductListByPage(req ProductListRequest) (raw []ProductLR, err error) {
 	tmp := ProductListResponse{}
-	err = tmp.GetJSON(supplierID, page)
+	err = tmp.GetJSON(req)
 	if err != nil {
 		return nil, err
 	}

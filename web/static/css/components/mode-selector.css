@@ -1,0 +1,19 @@
+/**
+ * Created by Teocci.
+ * Author: teocci@yandex.com on 2023-Aug-15
+ */
+main .mode-selector  {
+    width: 100vw;
+    height: 2rem;
+}
+
+.mode-selector .list-wrapper {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: .5rem;
+    line-height: 2rem;
+}
+
+.mode-selector .radios-list {
+    flex-flow: column;
+}

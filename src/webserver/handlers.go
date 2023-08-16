@@ -28,7 +28,7 @@ var (
 	}
 )
 
-func handlePositionView(c *fiber.Ctx) error {
+func handlePositionsView(c *fiber.Ctx) error {
 	sellerID := c.Params("id")
 	page := PageInfo{
 		Name:       "position",

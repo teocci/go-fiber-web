@@ -1,0 +1,10 @@
+/**
+ * Created by Teocci.
+ * Author: teocci@yandex.com on 2023-Aug-15
+ */
+.component-wrapper {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+}

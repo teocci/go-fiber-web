@@ -1,5 +1,5 @@
 import ProductTable from '../components/product-table.js'
-import SellerDetail from '../components/seller-detail.js'
+import SellerDetails from '../components/seller-details.js'
 
 /**
  * Created by RTT.
@@ -21,7 +21,7 @@ export default class SellerModule {
         this.placeholder = document.getElementById('main')
         const $placeholder = this.placeholder
 
-        this.seller = new SellerDetail($placeholder)
+        this.seller = new SellerDetails($placeholder)
         this.products = new ProductTable($placeholder)
     }
 

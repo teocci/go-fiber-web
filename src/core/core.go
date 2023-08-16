@@ -10,12 +10,18 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/teocci/go-fiber-web/src/utils/env"
 	"github.com/teocci/go-fiber-web/src/webserver"
 )
 
 func Start() error {
 	pid := os.Getpid()
 	fmt.Println("PID:", pid)
+
+	err := env.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
 
 	go webserver.Start()
 

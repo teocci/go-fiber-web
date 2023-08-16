@@ -5,6 +5,7 @@ package utils
 
 import (
 	"math"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -142,4 +143,43 @@ func StringToInt(s string) (n int) {
 	}
 
 	return
+}
+func GetFormattedDate(date time.Time) string {
+	return date.Format("2006-01-02")
+}
+
+func GetTodayDate() string {
+	today := time.Now()
+	return GetFormattedDate(today)
+}
+
+func GetLastWeekDate() string {
+	sevenDaysAgo := time.Now().AddDate(0, 0, -7)
+	return GetFormattedDate(sevenDaysAgo)
+}
+
+func GetYesterdayDate() string {
+	sevenDaysAgo := time.Now().AddDate(0, 0, -1)
+	return GetFormattedDate(sevenDaysAgo)
+}
+
+// GetWithHeaders performs an HTTP GET request with custom headers.
+func GetWithHeaders(url string, headers map[string]string) (resp *http.Response, err error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set custom headers
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+
+	resp, err = client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }

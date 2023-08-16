@@ -12,17 +12,13 @@ import (
 func HandleIdentical(c *fiber.Ctx) error {
 	productID := c.Params("id")
 	if productID == "" {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Invalid seller id: null",
-		})
+		return renderBadRequest(c, "Invalid product id: null")
 	}
 
 	products := model.IdenticalProductsResponse{}
 	err := products.GetJSON(productID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return renderInternalError(c, err.Error())
 	}
 
 	return c.JSON(fiber.Map{

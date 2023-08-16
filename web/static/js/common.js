@@ -55,7 +55,8 @@ const toCamelCase = s => s && toSnakeCase(s).toLowerCase()
 const toPascalCase = s => s && trimSpaces(s).toLowerCase()
     .replace(REGEX_PASCAL_CASE, m => `${m.charAt(0).toUpperCase()}${m.substring(1).toLowerCase()}`)
 
-const classExtender = (base, c) => class c extends base {}
+const classExtender = (base, c) => class c extends base {
+}
 const cloner = o => {
     let idx = 1
     const process = v => {
@@ -332,12 +333,7 @@ const mergeArraysWD = (a, b) => {
     return [...new Set([...(a ?? []), ...b ?? []])]
 }
 
-function serializeDate() {
-    const now = new Date()
-    return `${now.getFullYear()}${addPadding(now.getMonth() + 1)}${addPadding(now.getDate())}${addPadding(now.getHours())}${addPadding(now.getMinutes())}`
-}
-
-function distanceFormatter(d, precision = 2) {
+const numberFormatter = (n, precision = 2) => {
     const rx = /\.0+$|(\.\d*[1-9])0+$/
     const lookup = [
         {value: 1, symbol: ''},
@@ -348,10 +344,19 @@ function distanceFormatter(d, precision = 2) {
         {value: 1e15, symbol: 'P'},
         {value: 1e18, symbol: 'E'},
     ]
-    const item = lookup.slice().reverse().find(item => d >= item.value) ?? {value: 1, symbol: ''}
-    const val = (d / item.value).toFixed(precision).replace(rx, '$1')
+    const item = lookup.slice().reverse().find(item => n >= item.value) ?? {value: 1, symbol: ''}
+    const val = (n / item.value).toFixed(precision).replace(rx, '$1')
 
-    return `${val} ${item.symbol}m`
+    return `${val} ${item.symbol}`
+}
+
+function serializeDate() {
+    const now = new Date()
+    return `${now.getFullYear()}${addPadding(now.getMonth() + 1)}${addPadding(now.getDate())}${addPadding(now.getHours())}${addPadding(now.getMinutes())}`
+}
+
+function distanceFormatter(d, precision = 2) {
+    return `${numberFormatter(d, precision)}m`
 }
 
 function wait(ms, fn) {

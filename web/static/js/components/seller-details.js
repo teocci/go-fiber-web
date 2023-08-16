@@ -4,8 +4,10 @@
  */
 import BaseComponent from '../base/base-component.js'
 
-export default class SellerDetail extends BaseComponent {
-    static TAG = 'seller-detail'
+const TAG = 'seller-details'
+
+export default class SellerDetails extends BaseComponent {
+    static TAG = TAG
 
     constructor(element) {
         super(element)
@@ -15,12 +17,12 @@ export default class SellerDetail extends BaseComponent {
         this.initElements()
         this.initListeners()
 
-        this.fetchSeller()
+        this.requestSellerDetails()
     }
 
     initElements() {
         const $component = document.createElement('div')
-        $component.classList.add('seller-details', 'component-wrapper')
+        $component.classList.add(TAG, 'component-wrapper')
 
         const $infoWrap = document.createElement('div')
         $infoWrap.classList.add('info-wrap', 'cw-item')
@@ -87,18 +89,7 @@ export default class SellerDetail extends BaseComponent {
         this.domWithHolderUpdate = $component
     }
 
-    initListeners() {}
-
-    fetchSeller() {
-        const sellerId = pageInfo.sellerId
-        const url = `/api/v1/seller/${sellerId}`
-        fetch(url)
-            .then(res => res.json())
-            .then(d => {
-                    const seller = d.data
-                    this.loadData(seller)
-                },
-            )
+    initListeners() {
     }
 
     loadData(seller) {
@@ -121,5 +112,30 @@ export default class SellerDetail extends BaseComponent {
     disableButton() {
         const $btn = this.$button
         $btn.disabled = true
+    }
+
+    requestSellerDetails() {
+        const sellerId = pageInfo.sellerId
+        const url = `/api/v1/seller/${sellerId}`
+
+        this.fetchSellerDetails(url).then(d => {
+            if (isNil(d)) throw new Error('Seller details not found')
+
+            const {data} = d
+            if (isNil(data)) throw new Error('Seller details data not found')
+
+            this.loadData(data)
+        }).catch(e => {
+            console.error(e)
+        })
+    }
+
+    async fetchSellerDetails(url) {
+        const response = await fetch(url)
+        if (!response.ok) return null
+        const data = await response.json()
+        if (isNil(data)) return null
+
+        return data
     }
 }

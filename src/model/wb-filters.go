@@ -9,6 +9,16 @@ import (
 	"net/url"
 )
 
+const (
+	ModeSeller   = "seller"
+	ModeCategory = "category"
+)
+
+type FilterRequest struct {
+	ID   string `json:"id"`
+	Mode string `json:"mode"`
+}
+
 type FilterResponse struct {
 	State int `json:"state"`
 	Data  struct {
@@ -31,11 +41,34 @@ type FilterResponse struct {
 	} `json:"data"`
 }
 
-func (pfr *FilterResponse) GetJSON(supplierID string) (err error) {
-	baseURL := &url.URL{
-		Scheme: "https",
-		Host:   "catalog.wb.ru",
-		Path:   "/sellers/v4/filters",
+func (pfr *FilterResponse) GetJSON(req FilterRequest) (err error) {
+	if req.ID == "" {
+		return fmt.Errorf("invalid id: null")
+	}
+
+	if req.Mode == "" {
+		req.Mode = ModeSeller
+	}
+
+	var baseURL *url.URL
+	switch req.Mode {
+	case ModeSeller:
+		baseURL = &url.URL{
+			Scheme: "https",
+			Host:   "catalog.wb.ru",
+			Path:   "/sellers/v4/filters",
+		}
+	case ModeCategory:
+		shard := "beauty3"
+		if req.ID == "9000" {
+			shard = "beauty4"
+		}
+
+		baseURL = &url.URL{
+			Scheme: "https",
+			Host:   "catalog.wb.ru",
+			Path:   fmt.Sprintf("/catalog/%s/v4/filters", shard),
+		}
 	}
 
 	params := baseURL.Query()
@@ -45,7 +78,14 @@ func (pfr *FilterResponse) GetJSON(supplierID string) (err error) {
 	params.Set("reg", "0")
 	params.Set("regions", "80,38,83,4,64,33,68,70,30,40,86,75,69,22,1,31,66,110,48,71,114")
 	params.Set("spp", "0")
-	params.Set("supplier", supplierID)
+
+	switch req.Mode {
+	case ModeSeller:
+		params.Set("supplier", req.ID)
+	case ModeCategory:
+		params.Set("cat", req.ID)
+	}
+
 	baseURL.RawQuery = params.Encode()
 
 	apiURL := baseURL.String()

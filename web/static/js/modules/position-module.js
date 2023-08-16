@@ -1,5 +1,5 @@
 import ProductTable from '../components/product-table.js'
-import SellerDetail from '../components/seller-detail.js'
+import SellerDetails from '../components/seller-details.js'
 import ModeSelector from '../components/mode-selector.js'
 
 /**
@@ -13,7 +13,7 @@ export default class PositionModule {
         return this._instance
     }
 
-    /** @type {SellerDetail} */
+    /** @type {SellerDetails} */
     seller
 
     /** @type {ProductTable} */
@@ -29,7 +29,7 @@ export default class PositionModule {
 
         const $main = this.placeholder
 
-        this.seller = new SellerDetail($main)
+        this.seller = new SellerDetails($main)
         this.table = new ModeSelector($main)
         // this.products = new ProductTable($main)
     }

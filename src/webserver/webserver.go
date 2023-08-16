@@ -65,12 +65,14 @@ func Start() {
 
 	router.Get("/seller/logo/:id", handleLogoImage)
 	router.Get("/seller/:id", handleSellerView)
-	router.Get("/position/:id", handlePositionView)
+	router.Get("/positions/:id", handlePositionsView)
 
 	api := router.Group("/api/v1")
 	api.Get("/seller/:id", apicontroller.HandleSeller)
-	api.Get("/filter/seller/:id", apicontroller.HandleFilter)
-	api.Get("/filter/category/:id", apicontroller.HandleFilter)
+	api.Get("/filters/:action/:id", apicontroller.HandleFilter)
+	api.Get("/filters/:action/:id/:key", apicontroller.HandleFilter)
+	api.Get("/positions/:action/:id", apicontroller.HandlePositions)
+	api.Get("/positions/:action/:id/:xsubject", apicontroller.HandlePositions)
 	api.Get("/products/seller/:id", apicontroller.HandleProductList)
 	api.Get("/identical/:id", apicontroller.HandleIdentical)
 

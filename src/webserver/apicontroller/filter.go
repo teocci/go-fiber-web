@@ -12,26 +12,26 @@ import (
 func HandleFilter(c *fiber.Ctx) error {
 	action := c.Params("action")
 	if action == "" {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Invalid action: null",
-		})
-	}
-	productID := c.Params("id")
-	if productID == "" {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Invalid seller id: null",
-		})
+		return renderBadRequest(c, "Invalid action: null")
 	}
 
-	products := model.IdenticalProductsResponse{}
-	err := products.GetJSON(productID)
+	id := c.Params("id")
+	if id == "" {
+		return renderBadRequest(c, "Invalid id: null")
+	}
+
+	req := model.FilterRequest{
+		ID:   id,
+		Mode: action,
+	}
+
+	rf := model.FilterResponse{}
+	err := rf.GetJSON(req)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return renderBadRequest(c, err.Error())
 	}
 
-	return c.JSON(fiber.Map{
-		"data": products,
-	})
+	response := response{Data: rf.Data.Filters}
+
+	return c.JSON(response)
 }

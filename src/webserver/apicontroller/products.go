@@ -14,21 +14,19 @@ func HandleProductList(c *fiber.Ctx) error {
 	fmt.Println(string(c.Request().URI().QueryString()))
 	limit := c.QueryInt("limit")
 	if supplierID == "" {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Invalid seller id: null",
-		})
+		return renderBadRequest(c, "Invalid supplier id: null")
 	}
 
-	//if limit == 0 {
-	//	limit = 10
-	//}
+	req := model.ProductListRequest{
+		ID:    supplierID,
+		Mode:  model.ModeSeller,
+		Limit: limit,
+	}
 
 	products := model.ProductListResponse{}
-	err := products.GetAll(supplierID, limit)
+	err := products.GetAll(req)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return renderInternalError(c, err.Error())
 	}
 
 	return c.JSON(fiber.Map{

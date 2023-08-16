@@ -12,20 +12,16 @@ import (
 func HandleSeller(c *fiber.Ctx) error {
 	sellerID := c.Params("id")
 	if sellerID == "" {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Invalid seller id: null",
-		})
+		return renderBadRequest(c, "Invalid seller id: null")
 	}
 
 	seller := model.SellerResponse{}
 	err := seller.GetJSON(sellerID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return renderInternalError(c, err.Error())
 	}
 
-	return c.JSON(fiber.Map{
-		"data": seller,
-	})
+	response := response{Data: seller}
+
+	return c.JSON(response)
 }

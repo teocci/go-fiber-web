@@ -101,15 +101,15 @@ export default class ProductTable extends BaseComponent {
             columns: [
                 {
                     name: 'ID',
-                    width: '100px',
+                    width: '80px',
                 },
                 {
                     name: 'Name',
-                    width: '300px',
+                    width: '200px',
                 },
                 {
                     name: 'Price',
-                    width: '240px',
+                    width: '220px',
                     columns: [{
                         name: 'Base',
                         formatter: cell => currencyFormatter.format(cell),
@@ -121,7 +121,7 @@ export default class ProductTable extends BaseComponent {
                 {
                     name: 'Competitors',
                     sort: false,
-                    width: '450px',
+                    width: '400px',
                     formatter: cell => {
                         console.log({cell})
                         const {identical} = cell
@@ -353,7 +353,7 @@ export default class ProductTable extends BaseComponent {
                     competitor.sale,
                 )
                 rows.push(row.slice()) // create a copy of row to avoid changing the original array
-                row.splice(4) // remove the seller data from the row
+                row.splice(4) // remove the components data from the row
             })
         })
 
