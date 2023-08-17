@@ -30,19 +30,21 @@ func (ppl *ProductPositionListResponse) GetJSON(req ProductListRequest) (err err
 		req.Mode = ModeSeller
 	}
 
-	plr := ProductListResponse{}
-	err = plr.GetJSON(req)
+	req.Limit = 10
+
+	plResponse := ProductListResponse{}
+	err = plResponse.GetJSON(req)
 	if err != nil {
-		return errors.New(fmt.Sprintf("error getting product list: %s", err))
+		return errors.New(fmt.Sprintf("error getting product topList: %s", err))
 	}
 
-	ppl.Products = make([]ProductPositionResponse, len(plr.Data.Products))
+	ppl.Products = []ProductPositionResponse{}
 
-	list := plr.Data.Products
+	topList := plResponse.Data.Products
 
-	fmt.Printf("ProductListResponse: %+v\n", plr)
-	for j, prod := range list {
-		ppl.Products[j] = ProductPositionResponse{
+	fmt.Printf("ProductListResponse: %+v\n", plResponse)
+	for j, prod := range topList {
+		p := ProductPositionResponse{
 			Id:         prod.Id,
 			Name:       prod.Name,
 			Brand:      prod.Brand,
@@ -50,17 +52,19 @@ func (ppl *ProductPositionListResponse) GetJSON(req ProductListRequest) (err err
 			SupplierId: prod.SupplierId,
 			Keywords:   MPStatsKeywords{},
 		}
-
-		err = ppl.Products[j].Keywords.GetJSON(prod.Id)
+		err = p.Keywords.GetJSON(prod.Id)
 		if err != nil {
 			return errors.New(fmt.Sprintf("error getting product keywords: %s", err))
 		}
-		if j > 10 {
-			break
-		}
+		fmt.Printf("Prod: [%d][%s]\n", j, prod.Name)
+		ppl.Products = append(ppl.Products, p)
+
+		pLen := len(ppl.Products)
+		fmt.Printf("Len: [%d]\n", pLen)
 	}
 
 	keywords := FindCommonKeywords(ppl.Products)
+	fmt.Printf("Common keywords: %+v\n", keywords)
 	for i, product := range ppl.Products {
 		ppl.Products[i].Keywords = FilterWordsByCommonKeywords(product.Keywords, keywords)
 	}
@@ -70,10 +74,15 @@ func (ppl *ProductPositionListResponse) GetJSON(req ProductListRequest) (err err
 
 func FilterWordsByCommonKeywords(stat MPStatsKeywords, keywords []string) MPStatsKeywords {
 	words := make(map[string]WordsData)
+	sorted := stat.SortByWbCount()
 
-	for k, data := range stat.Words {
+	for _, k := range sorted {
 		if contains(keywords, k) {
-			words[k] = data
+			words[k] = stat.Words[k]
+			//fmt.Printf("Keyword: %s[wb-count: %d]\n", k, data.WbCount)
+		}
+		if len(words) == 15 {
+			break
 		}
 	}
 
@@ -95,18 +104,24 @@ func FindCommonKeywords(products []ProductPositionResponse) []string {
 	// Create a map to keep track of keyword occurrences
 	occurrences := make(map[string]int)
 
+	max := 0
 	// Count keyword occurrences across products
 	for _, product := range products {
 		for keyword := range product.Keywords.Words {
 			occurrences[keyword]++
+			if occurrences[keyword] > max {
+				max = occurrences[keyword]
+			}
 		}
 	}
 
 	// Find keywords that occur in all products
-	maxCount := 10
+	//pLen := 10
+	pLen := len(products)
+	fmt.Printf("Product len: %d | max count: %d\n", pLen, max)
 	keywords := make([]string, 0)
 	for keyword, count := range occurrences {
-		if count == maxCount {
+		if count == pLen || count == max {
 			keywords = append(keywords, keyword)
 		}
 	}

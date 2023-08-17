@@ -114,6 +114,9 @@ func (pr *ProductListResponse) GetJSON(req ProductListRequest) (err error) {
 	params.Set("regions", "80,64,38,4,83,33,68,70,69,30,86,75,40,1,22,66,31,48,110,71")
 	params.Set("sort", "popular")
 	params.Set("spp", "0")
+	if req.Limit > 1 {
+		params.Set("limit", strconv.Itoa(req.Limit))
+	}
 	if req.Page > 1 {
 		params.Set("page", strconv.Itoa(req.Page))
 	}
@@ -145,6 +148,11 @@ func (pr *ProductListResponse) GetJSON(req ProductListRequest) (err error) {
 	err = json.NewDecoder(r.Body).Decode(&pr)
 
 	return err
+}
+
+func (pr *ProductListResponse) GetFirstPage(req ProductListRequest) (err error) {
+	req.Page = 1
+	return pr.GetJSON(req)
 }
 
 func (pr *ProductListResponse) GetAll(req ProductListRequest) (err error) {
