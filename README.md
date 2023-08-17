@@ -14,6 +14,11 @@ Change the port for the web server on the `config.json` file
   }
 }
 ```
+add a .env file with the following variables
+
+```env
+MPS_API_SECRET=<HASH>
+```
 
 ## Run
 ```bash
