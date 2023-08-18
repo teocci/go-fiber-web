@@ -7,19 +7,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/teocci/go-fiber-web/src/utils"
+	"github.com/teocci/go-fiber-web/src/utils/mapslice"
 	"net/url"
 	"os"
-	"sort"
-
-	"github.com/teocci/go-fiber-web/src/utils"
 )
 
 type WordsData struct {
-	Pos     []int `json:"pos"`
-	Count   int   `json:"count"`
-	WbCount int   `json:"wb_count"`
-	Total   int   `json:"total"`
-	AvgPos  int   `json:"avgPos"`
+	Word    string `json:"word,omitempty"`
+	Type    string `json:"type,omitempty"`
+	Pos     []int  `json:"pos"`
+	Count   int    `json:"count"`
+	WbCount int    `json:"wb_count"`
+	Total   int    `json:"total"`
+	AvgPos  int    `json:"avgPos"`
 }
 
 type MPStatsKeywords struct {
@@ -32,7 +33,7 @@ type MPStatsKeywords struct {
 	Rating     []int                `json:"rating"`
 }
 
-func (k *MPStatsKeywords) GetJSON(productId int) (err error) {
+func (s *MPStatsKeywords) GetJSON(productId int) (err error) {
 	if productId == 0 {
 		return errors.New("invalid id: null")
 	}
@@ -61,40 +62,53 @@ func (k *MPStatsKeywords) GetJSON(productId int) (err error) {
 	}
 	defer r.Body.Close()
 
-	err = json.NewDecoder(r.Body).Decode(&k)
+	err = json.NewDecoder(r.Body).Decode(&s)
+
+	s.ProcessData()
 
 	return err
 }
 
-func (k *MPStatsKeywords) SortByWbCount() []string {
-	wordEntries := make([]struct {
-		Keyword string
-		Data    WordsData
-	}, 0)
-
-	for keyword, data := range k.Words {
-		wordEntries = append(wordEntries, struct {
-			Keyword string
-			Data    WordsData
-		}{Keyword: keyword, Data: data})
+func (s *MPStatsKeywords) ProcessData() {
+	for k, v := range s.Words {
+		v.Word = k
+		s.Words[k] = v
 	}
+}
 
-	sort.Slice(wordEntries, func(i, j int) bool {
-		return wordEntries[i].Data.WbCount > wordEntries[j].Data.WbCount
+func (s *MPStatsKeywords) SortByWbCount() []string {
+	sortedWords := mapslice.New(s.Words)
+	sortedWords.SortBy(func(a, b mapslice.Entry[WordsData]) bool {
+		return a.Value.Count > b.Value.Count
 	})
 
-	keys := make([]string, 0, len(wordEntries))
+	keys := sortedWords.Keys()
 
-	sortedWords := make(map[string]WordsData)
-	for _, entry := range wordEntries {
-		keys = append(keys, entry.Keyword)
-		sortedWords[entry.Keyword] = entry.Data
-		if len(sortedWords) < 11 {
-			fmt.Printf("Keyword: %s[wb-count: %d]\n", entry.Keyword, entry.Data.WbCount)
+	s.Words = make(map[string]WordsData)
+	for _, entries := range sortedWords.Entries() {
+		entries.Value.Word = entries.Key
+		s.Words[entries.Key] = entries.Value
+		if len(s.Words) < 11 {
+			fmt.Printf("SortByWbCount - Keyword: %s[wb-count: %d]\n", entries.Key, entries.Value.WbCount)
 		}
 	}
 
-	k.Words = sortedWords
-
 	return keys
+}
+
+func (s *MPStatsKeywords) Clone() MPStatsKeywords {
+	clonedWords := make(map[string]WordsData)
+	for key, value := range s.Words {
+		clonedWords[key] = value
+	}
+
+	return MPStatsKeywords{
+		Words:      clonedWords,
+		Days:       append([]string(nil), s.Days...),
+		Sales:      append([]int(nil), s.Sales...),
+		Balance:    append([]int(nil), s.Balance...),
+		FinalPrice: append([]int(nil), s.FinalPrice...),
+		Comments:   append([]int(nil), s.Comments...),
+		Rating:     append([]int(nil), s.Rating...),
+	}
 }

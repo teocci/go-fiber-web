@@ -12,9 +12,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/template/html"
-
+	"github.com/gofiber/template/html/v2"
 	"github.com/teocci/go-fiber-web/src/config"
 	"github.com/teocci/go-fiber-web/src/webserver/apicontroller"
 )
@@ -55,13 +53,7 @@ func Start() {
 	router.Static(indexRoute, indexFilePath)
 	router.Static(defaultFaviconRoute, defaultFaviconFilePath)
 
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     "*",
-		AllowCredentials: true,
-		AllowHeaders:     "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-access-token",
-		AllowMethods:     "GET, POST, PUT, DELETE",
-		ExposeHeaders:    "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type",
-	}))
+	router.Use(CORSMiddleware())
 
 	router.Get("/seller/logo/:id", handleLogoImage)
 	router.Get("/seller/:id", handleSellerView)

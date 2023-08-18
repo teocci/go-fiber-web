@@ -29,6 +29,8 @@ func HandlePositions(c *fiber.Ctx) error {
 
 	req.Xsubject = utils.StringToInt(c.Params("xsubject"))
 
+	req.Limit = c.QueryInt("limit", 0)
+
 	list := model.ProductPositionListResponse{}
 	err := list.GetJSON(req)
 	if err != nil {

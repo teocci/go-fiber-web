@@ -107,6 +107,8 @@ func (pr *ProductListResponse) GetJSON(req ProductListRequest) (err error) {
 		}
 	}
 
+	fmt.Printf("limit: %d\n", req.Limit)
+
 	params := baseURL.Query()
 	params.Set("appType", "1")
 	params.Set("curr", "rub")
