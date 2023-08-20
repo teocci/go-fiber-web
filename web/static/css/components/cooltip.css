@@ -1,0 +1,230 @@
+/**
+ * Created by Teocci.
+ * Author: teocci@yandex.com on 2023-Aug-19
+ */
+[data-cooltip] {
+  position: relative; /* opinion 1 */
+}
+
+/* Applies to all tooltips */
+[data-cooltip]::before,
+[data-cooltip]::after {
+  text-transform: none; /* opinion 2 */
+  font-size: .9em; /* opinion 3 */
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  position: absolute;
+  display: none;
+  opacity: 0;
+}
+[data-cooltip]::before {
+  content: '';
+  border: 5px solid transparent; /* opinion 4 */
+  z-index: 1001; /* absurdity 1 */
+}
+[data-cooltip]::after {
+  content: attr(tooltip); /* magic! */
+
+  /* most of the rest of this is opinion */
+  font-family: Helvetica, sans-serif;
+  text-align: center;
+
+  /*
+    Let the content set the size of the tooltips
+    but this will also keep them from being obnoxious
+    */
+  min-width: 3em;
+  max-width: 21em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 1ch 1.5ch;
+  border-radius: .3ch;
+  box-shadow: 0 1em 2em -.5em rgba(0, 0, 0, 0.35);
+  background: #333;
+  color: #fff;
+  z-index: 1000; /* absurdity 2 */
+}
+
+/* Make the tooltips respond to hover */
+[data-cooltip]:hover::before,
+[data-cooltip]:hover::after {
+  display: block;
+}
+
+/* don't show empty tooltips */
+[tooltip='']::before,
+[tooltip='']::after {
+  display: none !important;
+}
+
+/* FLOW: UP */
+[data-cooltip]:not([flow])::before,
+[data-cooltip][flow^="up"]::before {
+  bottom: 100%;
+  border-bottom-width: 0;
+  border-top-color: #333;
+}
+[data-cooltip]:not([flow])::after,
+[data-cooltip][flow^="up"]::after {
+  bottom: calc(100% + 5px);
+}
+[data-cooltip]:not([flow])::before,
+[data-cooltip]:not([flow])::after,
+[data-cooltip][flow^="up"]::before,
+[data-cooltip][flow^="up"]::after {
+  left: 50%;
+  transform: translate(-50%, -.5em);
+}
+
+/* FLOW: DOWN */
+[data-cooltip][flow^="down"]::before {
+  top: 100%;
+  border-top-width: 0;
+  border-bottom-color: #333;
+}
+[data-cooltip][flow^="down"]::after {
+  top: calc(100% + 5px);
+}
+[data-cooltip][flow^="down"]::before,
+[data-cooltip][flow^="down"]::after {
+  left: 50%;
+  transform: translate(-50%, .5em);
+}
+
+/* FLOW: LEFT */
+[data-cooltip][flow^="left"]::before {
+  top: 50%;
+  border-right-width: 0;
+  border-left-color: #333;
+  left: calc(0em - 5px);
+  transform: translate(-.5em, -50%);
+}
+[data-cooltip][flow^="left"]::after {
+  top: 50%;
+  right: calc(100% + 5px);
+  transform: translate(-.5em, -50%);
+}
+
+/* FLOW: RIGHT */
+[data-cooltip][flow^="right"]::before {
+  top: 50%;
+  border-left-width: 0;
+  border-right-color: #333;
+  right: calc(0em - 5px);
+  transform: translate(.5em, -50%);
+}
+[data-cooltip][flow^="right"]::after {
+  top: 50%;
+  left: calc(100% + 5px);
+  transform: translate(.5em, -50%);
+}
+
+/* KEYFRAMES */
+@keyframes tooltips-vert {
+  to {
+    opacity: .9;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes tooltips-horz {
+  to {
+    opacity: .9;
+    transform: translate(0, -50%);
+  }
+}
+
+/* FX All The Things */
+[data-cooltip]:not([flow]):hover::before,
+[data-cooltip]:not([flow]):hover::after,
+[data-cooltip][flow^="up"]:hover::before,
+[data-cooltip][flow^="up"]:hover::after,
+[data-cooltip][flow^="down"]:hover::before,
+[data-cooltip][flow^="down"]:hover::after {
+  animation: tooltips-vert 300ms ease-out forwards;
+}
+
+[data-cooltip][flow^="left"]:hover::before,
+[data-cooltip][flow^="left"]:hover::after,
+[data-cooltip][flow^="right"]:hover::before,
+[data-cooltip][flow^="right"]:hover::after {
+  animation: tooltips-horz 300ms ease-out forwards;
+}
+
+
+[data-cooltip]:after {
+    content: attr(data-cooltip);
+    z-index: 5;
+    margin-left: 2rem;
+    padding: 5px;
+    border-radius: 3px;
+    background-color: var(--bg-black-a75);
+    color: var(--wb-complement);
+    font-family: "Ubuntu", Arial, sans-serif;
+    font-weight: 400;
+    font-size: .8rem;
+    text-align: center;
+    text-transform: capitalize;
+    opacity: 0;
+    white-space: nowrap;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.2s ease-in 0.2s;
+}
+
+[data-cooltip]:hover:after {
+    opacity: 1;
+    visibility: visible;
+}
+
+[data-cooltip-left]:after,
+[data-cooltip-position="left"]:after {
+    left: auto;
+    right: 100%;
+    margin-left: 0;
+    margin-right: 10px;
+}
+
+[data-cooltip-top]:after,
+[data-cooltip-position="top"]:after,
+[data-cooltip-bottom]:after,
+[data-cooltip-position="bottom"]:after {
+    left: 50%;
+    margin-left: 0;
+    transform: translateX(-50%);
+}
+
+[data-cooltip-top]:after,
+[data-cooltip-position="top"]:after {
+    bottom: 100%;
+    top: auto;
+    margin-bottom: 10px;
+}
+
+[data-cooltip-bottom]:after,
+[data-cooltip-position="bottom"]:after {
+    bottom: auto;
+    top: 100%;
+    margin-top: 10px;
+}
+
+[data-cooltip-fixed-width]:after {
+    width: 300px;
+    padding: 10px;
+    line-height: 1.4;
+    text-align: left;
+    text-transform: none;
+    white-space: normal;
+}
+
+[data-cooltip-click-hide]:hover:after {
+    opacity: 0;
+    visibility: hidden;
+}
+
+[data-cooltip-click-hide]:not(:active):hover:after {
+    opacity: 1;
+    visibility: visible;
+}

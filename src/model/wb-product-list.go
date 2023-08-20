@@ -176,6 +176,67 @@ func (pr *ProductListResponse) GetAll(req ProductListRequest) (err error) {
 		return err
 	}
 
+	limit := filter.Data.Total
+	if req.Limit > 1 {
+		limit = req.Limit
+	}
+
+	req.Page = 1
+	//totalPages := int(math.Ceil(float64(limit) / float64(totalPerPage)))
+	fullPages := limit / totalPerPage
+	remaining := limit % totalPerPage
+	totalPages := fullPages
+	if remaining > 0 {
+		totalPages++
+	}
+	fmt.Printf("%+v, %+v, %+v\n", limit, totalPerPage, totalPages)
+
+	pr.Data.Products = make([]ProductLR, 0)
+
+	wg := &sync.WaitGroup{}
+	for req.Page <= totalPages {
+		wg.Add(1)
+		if req.Page == totalPages && remaining > 0 {
+			req.Limit = remaining
+		}
+		go func(request ProductListRequest) {
+			tmp := ProductListResponse{}
+			err = tmp.GetJSON(request)
+			if err != nil {
+				fmt.Printf("error getting product list: %s\n", err)
+				wg.Done()
+				return
+			}
+
+			pr.Data.Products = append(pr.Data.Products, tmp.Data.Products...)
+			wg.Done()
+		}(req)
+		req.Page++
+	}
+	wg.Wait()
+
+	return err
+}
+
+func (pr *ProductListResponse) GetIdenticalForAll(req ProductListRequest) (err error) {
+	if req.ID == "" {
+		return fmt.Errorf("invalid id: null")
+	}
+
+	if req.Mode == "" {
+		req.Mode = ModeSeller
+	}
+
+	fr := FilterRequest{
+		ID:   req.ID,
+		Mode: ModeSeller,
+	}
+	filter := FilterResponse{}
+	err = filter.GetJSON(fr)
+	if err != nil {
+		return err
+	}
+
 	useLimit := req.Limit > 1
 
 	req.Page = 1

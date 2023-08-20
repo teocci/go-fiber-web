@@ -37,7 +37,7 @@ func HandlePositions(c *fiber.Ctx) error {
 		return renderBadRequest(c, err.Error())
 	}
 
-	response := response{Data: list.Products}
+	response := response{Data: list}
 
 	return c.JSON(response)
 }

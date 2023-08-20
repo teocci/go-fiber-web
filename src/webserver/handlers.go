@@ -30,10 +30,12 @@ var (
 
 func handlePositionsView(c *fiber.Ctx) error {
 	sellerID := c.Params("id")
+	limit := c.QueryInt("limit")
 	page := PageInfo{
 		Name:       "position",
 		Controller: "position",
 		SellerID:   sellerID,
+		Limit:      limit,
 	}
 
 	return renderPage(c, page)

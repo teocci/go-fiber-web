@@ -5,12 +5,13 @@
 @import 'components/base-component-wrapper.css';
 @import 'components/seller-details.css';
 @import 'components/mode-selector.css';
+@import 'components/tooltips.css';
 
-.products {
+.position-table {
     flex-grow: 1;
     max-height: calc(100vh - var(--footer-height) - 2 * var(--padding));
     padding: var(--padding);
-    overflow-y: auto;
+    /*overflow-y: auto;*/
 }
 
 /*table .gridjs-tbody {*/
@@ -32,6 +33,10 @@
 /*table .gridjs-tbody td:last-child {*/
 /*    width: calc(450px)*/
 /*}*/
+
+.gridjs-table {
+    font-size: .8rem;
+}
 
 .gridjs-table .gridjs-th,
 .gridjs-table .gridjs-td {

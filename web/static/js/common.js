@@ -226,11 +226,19 @@ const hashID = (size = 6) => {
     return bytes.reduce((acc, byte) => `${acc}${charset[byte & MASK]}`, '')
 }
 
+const todayToYYYYMMDDHHMM = () => {
+    const now = new Date()
+    const options = {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'}
+    const formatter = new Intl.DateTimeFormat('ko-KR', options)
+    const parts = formatter.formatToParts(now)
+
+    return `${parts[0]?.value}-${parts[2]?.value}-${parts[4]?.value}-${parts[6]?.value}${parts[8]?.value}`
+}
 const todayToYYYYMMDD = () => {
-    const currentDate = new Date()
+    const now = new Date()
     const options = {year: 'numeric', month: '2-digit', day: '2-digit'}
     const formatter = new Intl.DateTimeFormat('ko-KR', options)
-    const parts = formatter.formatToParts(currentDate)
+    const parts = formatter.formatToParts(now)
 
     return `${parts[0]?.value}-${parts[2]?.value}-${parts[4]?.value}`
 }

@@ -3,6 +3,7 @@
  * Author: teocci@yandex.com on 2023-Aug-08
  */
 import BaseComponent from '../base/base-component.js'
+import APIModule from '../modules/api-module.js'
 
 const TAG = 'mode-selector'
 
@@ -114,6 +115,9 @@ export default class ModeSelector extends BaseComponent {
 
     /** @type {?string} */
     currentFilter = null
+
+    /** @type {Function} */
+    onRequestLoadTable = req => {}
 
     constructor($element) {
         super($element)
@@ -358,7 +362,18 @@ export default class ModeSelector extends BaseComponent {
 
     onModeCompany() {
         this.hideCategories()
-        this.requestFilters('seller', pageInfo.sellerId)
+        const req = {
+            action: 'seller',
+            uid: pageInfo.sellerId,
+        }
+        APIModule.requestFilters(req, d => {
+            this.updateFilters(d)
+            this.onRequestLoadTable(req)
+        })
+
+        // APIModule.requestPositions(req, d => {
+        //     console.log('requestPositions', {d})
+        // })
     }
 
     onModeCategory() {
@@ -377,7 +392,19 @@ export default class ModeSelector extends BaseComponent {
         if (key === this.currentCategory) return
 
         this.currentCategory = key
-        this.requestFilters('category', item.uid)
+        const req = {
+            action: 'category',
+            uid: item.uid,
+        }
+
+        APIModule.requestFilters(req, d => {
+            this.updateFilters(d)
+            this.onRequestLoadTable(req)
+        })
+
+        // APIModule.requestPositions(req, d => {
+        //     console.log('requestPositions', {d})
+        // })
 
         console.log('onCategoryChange', {key, uid: item.uid})
     }
@@ -421,31 +448,5 @@ export default class ModeSelector extends BaseComponent {
         $option.textContent = `${item.name} (${numberFormatter(item.count)})`
 
         return $option
-    }
-
-    requestFilters(action, id) {
-        const url = `/api/v1/filters/${action}/${id}`
-
-        console.log('requestFilters', {url})
-
-        this.fetchFilters(url).then(d => {
-            if (isNil(d)) throw new Error('Filters not found')
-
-            const {data} = d
-            if (isNil(data)) throw new Error('Filters data not found')
-
-            this.updateFilters(data)
-        }).catch(e => {
-            console.error(e)
-        })
-    }
-
-    async fetchFilters(url) {
-        const response = await fetch(url)
-        if (!response.ok) return null
-        const data = await response.json()
-        if (isNil(data)) return null
-
-        return data
     }
 }

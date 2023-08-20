@@ -4,6 +4,7 @@
 package utils
 
 import (
+	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -194,8 +195,15 @@ func GetWithHeaders(url string, headers map[string]string) (resp *http.Response,
 		req.Header.Set(key, value)
 	}
 
+	// Send request
 	resp, err = client.Do(req)
 	if err != nil {
+		return nil, err
+	}
+
+	code := resp.StatusCode
+	if code != 200 {
+		fmt.Printf("Error status code: %d\n", code)
 		return nil, err
 	}
 

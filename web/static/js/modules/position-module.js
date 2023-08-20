@@ -1,6 +1,8 @@
-import ProductTable from '../components/product-table.js'
+import ProductTable from '../components/tables/product-table.js'
 import SellerDetails from '../components/seller-details.js'
 import ModeSelector from '../components/mode-selector.js'
+import PositionTable from '../components/tables/position-table.js'
+import APIModule from './api-module.js'
 
 /**
  * Created by RTT.
@@ -14,10 +16,13 @@ export default class PositionModule {
     }
 
     /** @type {SellerDetails} */
-    seller
+    info
 
-    /** @type {ProductTable} */
-    products
+    /** @type {ModeSelector} */
+    selector
+
+    /** @type {PositionTable} */
+    table
 
     constructor() {
         this.initElement()
@@ -29,38 +34,35 @@ export default class PositionModule {
 
         const $main = this.placeholder
 
-        this.seller = new SellerDetails($main)
-        this.table = new ModeSelector($main)
-        // this.products = new ProductTable($main)
+        this.info = new SellerDetails($main)
+        this.selector = new ModeSelector($main)
+        this.table = new PositionTable($main)
     }
 
     initListeners() {
-        if (!this.products) return
-
-        this.products.onStateChange = value => {
-            switch (value) {
-                case ProductTable.STATE_DATA_LOADED:
-                    this.seller.enableButton()
-                    break
-
-                default:
-                    this.seller.disableButton()
+        if (this.selector) {
+            this.selector.onRequestLoadTable = req => {
+                APIModule.requestPositions(req, d => {
+                    this.table.updateTable(d)
+                })
             }
         }
 
-        this.products.onStateChange = value => {
-            switch (value) {
-                case ProductTable.STATE_DATA_LOADED:
-                    this.seller.enableButton()
-                    break
+        if (this.table) {
+            this.table.onStateChange = value => {
+                switch (value) {
+                    case PositionTable.STATE_KEY_DATA_LOADED:
+                        this.info.enableButton()
+                        break
 
-                default:
-                    this.seller.disableButton()
+                    default:
+                        this.info.disableButton()
+                }
             }
         }
 
-        this.seller.$button.onclick = e => {
-            this.products.exportTableToXlsx()
+        this.info.$button.onclick = e => {
+            this.table.exportTableToXlsx()
         }
     }
 }

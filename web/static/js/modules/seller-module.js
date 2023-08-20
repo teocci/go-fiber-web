@@ -1,4 +1,4 @@
-import ProductTable from '../components/product-table.js'
+import ProductTable from '../components/tables/product-table.js'
 import SellerDetails from '../components/seller-details.js'
 
 /**
@@ -28,7 +28,7 @@ export default class SellerModule {
     initListeners() {
         this.products.onStateChange = value => {
             switch (value) {
-                case ProductTable.STATE_DATA_LOADED:
+                case ProductTable.STATE_KEY_DATA_LOADED:
                     this.seller.enableButton()
                     break
 

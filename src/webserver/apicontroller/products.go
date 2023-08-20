@@ -24,7 +24,7 @@ func HandleProductList(c *fiber.Ctx) error {
 	}
 
 	products := model.ProductListResponse{}
-	err := products.GetAll(req)
+	err := products.GetIdenticalForAll(req)
 	if err != nil {
 		return renderInternalError(c, err.Error())
 	}
