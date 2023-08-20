@@ -54,71 +54,48 @@ var (
 	}
 )
 
-func checkConsecutiveRequests() {
-	fmt.Printf("checkConsecutiveRequests Rate limit: %d/%d\n", mpstRateLimit.Consecutive, mpstMaxConsecutiveRequests)
-	if time.Since(mpstRateLimit.LastTime) < mpstMaxDuration && mpstRateLimit.Consecutive > mpstMaxConsecutiveRequests {
-		fmt.Printf("Rate limit exceeded, pausing for %0.00f\n", mpstPauseDuration.Seconds())
-		time.Sleep(mpstPauseDuration)
-		mpstRateLimit.Consecutive = 0
-		mpstRateLimit.LastTime = time.Now()
-	}
-}
-
-func updateConsecutiveRequests() {
-	mpstRateLimit.Consecutive++
-	if time.Since(mpstRateLimit.LastTime) > mpstMaxDuration {
-		mpstRateLimit.Consecutive = 0
-	}
-
-	mpstRateLimit.LastTime = time.Now()
-	fmt.Printf("updateConsecutiveRequests Rate limit: %d/%d\n", mpstRateLimit.Consecutive, mpstMaxConsecutiveRequests)
-}
-
-func (s *MPStatsKeywords) checkMPSTCache(productId int) (ok bool) {
+// TODO: replace nm with cacheKey
+func (s *MPStatsKeywords) checkCache(nm int) (ok bool) {
 	ok = false
-	if productId == 0 {
+	if nm == 0 {
 		return false
 	}
 
-	cacheKey := fmt.Sprintf("mpstats-keywords-%d", productId)
-	fmt.Printf("MPStatsKeywords checkMPSTCache cacheKey: %s\n", cacheKey)
+	cacheKey := fmt.Sprintf("mpstats-keywords-%d", nm)
+	fmt.Printf("MPStatsKeywords checkCache cacheKey: %s\n", cacheKey)
 
 	var sCache *MPStatsKeywords
 	if sCache, ok = mpstCache.Get(cacheKey); ok {
-		fmt.Println("MPStatsKeywords GetJSON - Cache hit")
-		var d = sCache
-		fmt.Printf("MPStatsKeywords cached data: %#v\n", d)
-		s.CopyFrom(d.Clone())
+		fmt.Println("mpstats-keywords - Cache hit")
+		*s = *sCache
 		return true
 	}
 
 	return
 }
 
-func (s *MPStatsKeywords) updateCache(productId int) {
-	cacheKey := fmt.Sprintf("mpstats-keywords-%d", productId)
+func (s *MPStatsKeywords) updateCache(nm int) {
+	cacheKey := fmt.Sprintf("mpstats-keywords-%d", nm)
 	fmt.Printf("MPStatsKeywords updateCache cacheKey: %s\n", cacheKey)
 	mpstCache.Set(cacheKey, s.Clone(), 0)
 }
 
-func (s *MPStatsKeywords) GetJSON(productId int) (err error) {
-	if productId == 0 {
+func (s *MPStatsKeywords) GetJSON(nm int) (err error) {
+	if nm == 0 {
 		return errors.New("invalid id: null")
 	}
 
-	fmt.Println("checkMPSTCache MPStatsKeywords")
-	found := s.checkMPSTCache(productId)
+	found := s.checkCache(nm)
 	if found {
 		return nil
 	}
-	fmt.Printf("checkMPSTCache found: %t\n", found)
 
 	checkConsecutiveRequests()
 
 	baseURL := &url.URL{
 		Scheme: "https",
 		Host:   "mpstats.io",
-		Path:   fmt.Sprintf("/api/wb/get/item/%d/by_keywords", productId),
+		Path:   fmt.Sprintf("/api/wb/get/item/%d/by_keywords", nm),
 	}
 	params := baseURL.Query()
 	params.Set("d1", utils.GetLastWeekDate())
@@ -175,7 +152,7 @@ func (s *MPStatsKeywords) GetJSON(productId int) (err error) {
 	updateConsecutiveRequests()
 
 	s.ProcessData()
-	s.updateCache(productId)
+	s.updateCache(nm)
 
 	return nil
 }
@@ -224,13 +201,13 @@ func (s *MPStatsKeywords) Clone() MPStatsKeywords {
 	}
 
 	return MPStatsKeywords{
-		Words:      clonedWords,
 		Days:       append([]string(nil), s.Days...),
 		Sales:      append([]int(nil), s.Sales...),
 		Balance:    append([]int(nil), s.Balance...),
 		FinalPrice: append([]int(nil), s.FinalPrice...),
 		Comments:   append([]int(nil), s.Comments...),
 		Rating:     append([]int(nil), s.Rating...),
+		Words:      clonedWords,
 	}
 }
 
@@ -333,4 +310,24 @@ func toIntSlice(value interface{}) ([]int, error) {
 		return result, nil
 	}
 	return nil, fmt.Errorf("type assertion failed for int slice")
+}
+
+func checkConsecutiveRequests() {
+	fmt.Printf("checkConsecutiveRequests Rate limit: %d/%d\n", mpstRateLimit.Consecutive, mpstMaxConsecutiveRequests)
+	if time.Since(mpstRateLimit.LastTime) < mpstMaxDuration && mpstRateLimit.Consecutive > mpstMaxConsecutiveRequests {
+		fmt.Printf("Rate limit exceeded, pausing for %0.00f\n", mpstPauseDuration.Seconds())
+		time.Sleep(mpstPauseDuration)
+		mpstRateLimit.Consecutive = 0
+		mpstRateLimit.LastTime = time.Now()
+	}
+}
+
+func updateConsecutiveRequests() {
+	mpstRateLimit.Consecutive++
+	if time.Since(mpstRateLimit.LastTime) > mpstMaxDuration {
+		mpstRateLimit.Consecutive = 0
+	}
+
+	mpstRateLimit.LastTime = time.Now()
+	fmt.Printf("updateConsecutiveRequests Rate limit: %d/%d\n", mpstRateLimit.Consecutive, mpstMaxConsecutiveRequests)
 }

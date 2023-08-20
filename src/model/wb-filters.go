@@ -6,12 +6,8 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/teocci/go-fiber-web/src/scache"
 	"net/url"
-)
-
-const (
-	ModeSeller   = "seller"
-	ModeCategory = "category"
 )
 
 type FilterRequest struct {
@@ -41,6 +37,44 @@ type FilterResponse struct {
 	} `json:"data"`
 }
 
+var (
+	wbFiltersCache = scache.GetCacheInstance[FilterResponse]("WBFilters")
+)
+
+func (pfr *FilterResponse) checkCache(cacheKey string) (ok bool) {
+	ok = false
+	if cacheKey == "" {
+		return
+	}
+
+	var cacheData *FilterResponse
+	if cacheData, ok = wbFiltersCache.Get(cacheKey); ok {
+		fmt.Println("wb-filters cache hit")
+		*pfr = *cacheData
+		return true
+	}
+
+	return false
+}
+
+func (pfr *FilterResponse) updateCache(cacheKey string) {
+	if cacheKey == "" {
+		return
+	}
+
+	cloned := pfr.Clone()
+	wbFiltersCache.Set(cacheKey, cloned, 0)
+}
+
+func (pfr *FilterResponse) Clone() FilterResponse {
+	clone := FilterResponse{
+		State: pfr.State,
+		Data:  pfr.Data,
+	}
+
+	return clone
+}
+
 func (pfr *FilterResponse) GetJSON(req FilterRequest) (err error) {
 	if req.ID == "" {
 		return fmt.Errorf("invalid id: null")
@@ -50,45 +84,16 @@ func (pfr *FilterResponse) GetJSON(req FilterRequest) (err error) {
 		req.Mode = ModeSeller
 	}
 
+	var cacheKey string
 	var baseURL *url.URL
-	switch req.Mode {
-	case ModeSeller:
-		baseURL = &url.URL{
-			Scheme: "https",
-			Host:   "catalog.wb.ru",
-			Path:   "/sellers/v4/filters",
-		}
-	case ModeCategory:
-		shard := "beauty3"
-		if req.ID == "9000" {
-			shard = "beauty4"
-		}
+	cacheKey, baseURL = req.generateCacheKeyAndURL()
 
-		baseURL = &url.URL{
-			Scheme: "https",
-			Host:   "catalog.wb.ru",
-			Path:   fmt.Sprintf("/catalog/%s/v4/filters", shard),
-		}
+	found := pfr.checkCache(cacheKey)
+	if found {
+		return nil
 	}
 
-	params := baseURL.Query()
-	params.Set("appType", "1")
-	params.Set("curr", "rub")
-	params.Set("dest", "-1257786")
-	params.Set("reg", "0")
-	params.Set("regions", "80,38,83,4,64,33,68,70,30,40,86,75,69,22,1,31,66,110,48,71,114")
-	params.Set("spp", "0")
-
-	switch req.Mode {
-	case ModeSeller:
-		params.Set("supplier", req.ID)
-	case ModeCategory:
-		params.Set("cat", req.ID)
-	}
-
-	baseURL.RawQuery = params.Encode()
-
-	apiURL := baseURL.String()
+	apiURL := req.generateAPIURL(baseURL)
 	fmt.Printf("WB_API_URL: %#v\n", apiURL)
 
 	r, err := httpClient.Get(apiURL)
@@ -99,5 +104,53 @@ func (pfr *FilterResponse) GetJSON(req FilterRequest) (err error) {
 
 	err = json.NewDecoder(r.Body).Decode(&pfr)
 
+	pfr.updateCache(cacheKey)
+
 	return err
+}
+
+func (fReq *FilterRequest) generateCacheKeyAndURL() (cacheKey string, baseURL *url.URL) {
+	switch fReq.Mode {
+	case ModeSeller:
+		baseURL = &url.URL{
+			Scheme: "https",
+			Host:   "catalog.wb.ru",
+			Path:   "/sellers/v4/filters",
+		}
+		cacheKey = fmt.Sprintf("wb-filters-%s-%s", fReq.Mode, fReq.ID)
+	case ModeCategory:
+		shard := "beauty3"
+		if fReq.ID == "9000" {
+			shard = "beauty4"
+		}
+
+		baseURL = &url.URL{
+			Scheme: "https",
+			Host:   "catalog.wb.ru",
+			Path:   fmt.Sprintf("/catalog/%s/v4/filters", shard),
+		}
+		cacheKey = fmt.Sprintf("wb-filters-%s-%s-%s", fReq.Mode, shard, fReq.ID)
+	}
+
+	return
+}
+
+func (fReq *FilterRequest) generateAPIURL(baseURL *url.URL) string {
+	params := baseURL.Query()
+	params.Set("appType", "1")
+	params.Set("curr", "rub")
+	params.Set("dest", "-1257786")
+	params.Set("reg", "0")
+	params.Set("regions", "80,38,83,4,64,33,68,70,30,40,86,75,69,22,1,31,66,110,48,71,114")
+	params.Set("spp", "0")
+
+	switch fReq.Mode {
+	case ModeSeller:
+		params.Set("supplier", fReq.ID)
+	case ModeCategory:
+		params.Set("cat", fReq.ID)
+	}
+
+	baseURL.RawQuery = params.Encode()
+	return baseURL.String()
 }

@@ -5,7 +5,9 @@ package model
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/teocci/go-fiber-web/src/scache"
 	"net/url"
 )
 
@@ -71,7 +73,64 @@ type ProductDetailResponse struct {
 	} `json:"data"`
 }
 
+var (
+	pdCache = scache.GetCacheInstance[ProductDetailResponse]("ProductDetail")
+)
+
+// TODO: replace nm with cacheKey
+func (pdr *ProductDetailResponse) checkCache(nm string) (ok bool) {
+	ok = false
+	if nm == "" {
+		return
+	}
+
+	cacheKey := fmt.Sprintf("product-detail-%s", nm)
+	fmt.Printf("ProductDetail checkCache cacheKey: %s\n", cacheKey)
+
+	var sCache *ProductDetailResponse
+	if sCache, ok = pdCache.Get(cacheKey); ok {
+		fmt.Println("product-detail - Cache hit")
+		fmt.Printf("ProductDetail cached data: %#v\n", sCache)
+		*pdr = *sCache
+		return true
+	}
+
+	return
+}
+
+func (pdr *ProductDetailResponse) updateCache(nm string) {
+	if nm == "" {
+		return
+	}
+
+	cacheKey := fmt.Sprintf("product-detail-%s", nm)
+	cloned := pdr.Clone()
+	pdCache.Set(cacheKey, cloned, 0)
+}
+
+func (pdr *ProductDetailResponse) Clone() ProductDetailResponse {
+	clone := ProductDetailResponse{}
+	clone.copyFrom(*pdr)
+
+	return clone
+}
+
+func (pdr *ProductDetailResponse) copyFrom(s ProductDetailResponse) {
+	pdr.State = s.State
+	pdr.Params = s.Params
+	pdr.Data = s.Data
+}
+
 func (pdr *ProductDetailResponse) GetJSON(nm string) (err error) {
+	if nm == "" {
+		return errors.New("invalid nm: null")
+	}
+
+	found := pdr.checkCache(nm)
+	if found {
+		return nil
+	}
+
 	baseURL := &url.URL{
 		Scheme: "https",
 		Host:   "card.wb.ru",
@@ -103,6 +162,8 @@ func (pdr *ProductDetailResponse) GetJSON(nm string) (err error) {
 	defer r.Body.Close()
 
 	err = json.NewDecoder(r.Body).Decode(&pdr)
+
+	pdr.updateCache(nm)
 
 	return err
 }

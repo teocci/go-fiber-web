@@ -30,7 +30,7 @@ func (ci *CacheInstance[T]) GetInstance() *SimpleCache[T] {
 	ci.once.Do(func() {
 		ci.instance = &SimpleCache[T]{
 			data:            make(map[string]Entry[T]),
-			defaultDuration: time.Hour,
+			defaultDuration: 10 * time.Hour,
 		}
 	})
 	return ci.instance

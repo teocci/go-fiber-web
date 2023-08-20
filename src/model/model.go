@@ -3,6 +3,12 @@
 // Author: teocci@yandex.com on 2023-Aug-20
 package model
 
-const maxWorkers = 5
+const (
+	ModeSeller   = "seller"
+	ModeCategory = "category"
+
+	maxWorkers   = 5
+	totalPerPage = 100
+)
 
 //var workerPool = make(chan struct{}, maxWorkers)

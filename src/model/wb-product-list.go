@@ -7,14 +7,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/teocci/go-fiber-web/src/scache"
 	"math"
 	"net/url"
 	"strconv"
 	"strings"
 	"sync"
 )
-
-const totalPerPage = 100
 
 type ProductLR struct {
 	Sort            int           `json:"__sort"`
@@ -77,6 +76,33 @@ type ProductListRequest struct {
 	Limit    int    `json:"limit"`
 }
 
+var (
+	wbProductListCache = scache.GetCacheInstance[ProductListResponse]("WBProductList")
+)
+
+func (pr *ProductListResponse) checkCache(cacheKey string) (ok bool) {
+	ok = false
+	if cacheKey == "" {
+		return
+	}
+
+	var cacheData *ProductListResponse
+	if cacheData, ok = wbProductListCache.Get(cacheKey); ok {
+		fmt.Println("wb-product-list cache hit")
+		*pr = *cacheData
+		return true
+	}
+
+	return false
+}
+
+func (pr *ProductListResponse) updateCache(cacheKey string) {
+	if cacheKey == "" {
+		return
+	}
+	wbProductListCache.Set(cacheKey, *pr, 0)
+}
+
 func (pr *ProductListResponse) GetJSON(req ProductListRequest) (err error) {
 	if req.ID == "" {
 		return fmt.Errorf("invalid id: null")
@@ -86,59 +112,16 @@ func (pr *ProductListResponse) GetJSON(req ProductListRequest) (err error) {
 		req.Mode = ModeSeller
 	}
 
-	var baseURL *url.URL
-	switch req.Mode {
-	case ModeSeller:
-		baseURL = &url.URL{
-			Scheme: "https",
-			Host:   "catalog.wb.ru",
-			Path:   "/sellers/catalog",
-		}
-	case ModeCategory:
-		shard := "beauty3"
-		if req.ID == "9000" {
-			shard = "beauty4"
-		}
+	cacheKey, baseURL := req.generateCacheKeyAndURL()
 
-		baseURL = &url.URL{
-			Scheme: "https",
-			Host:   "catalog.wb.ru",
-			Path:   fmt.Sprintf("/catalog/%s/catalog", shard),
-		}
+	found := pr.checkCache(cacheKey)
+	if found {
+		return nil
 	}
 
 	fmt.Printf("limit: %d\n", req.Limit)
 
-	params := baseURL.Query()
-	params.Set("appType", "1")
-	params.Set("curr", "rub")
-	params.Set("dest", "-1257786")
-	params.Set("regions", "80,64,38,4,83,33,68,70,69,30,86,75,40,1,22,66,31,48,110,71")
-	params.Set("sort", "popular")
-	params.Set("spp", "0")
-	if req.Limit > 1 {
-		params.Set("limit", strconv.Itoa(req.Limit))
-	}
-	if req.Page > 1 {
-		params.Set("page", strconv.Itoa(req.Page))
-	}
-	//params.Set("couponsGeo", "12,3,18,15,21")
-	//params.Set("emp", "0")
-	//params.Set("lang", "ru")
-	//params.Set("locale", "ru")
-	//params.Set("pricemarginCoeff", "1.0")
-	//params.Set("reg", "0")
-
-	switch req.Mode {
-	case ModeSeller:
-		params.Set("supplier", req.ID)
-	case ModeCategory:
-		params.Set("cat", req.ID)
-	}
-
-	baseURL.RawQuery = params.Encode()
-
-	apiURL := baseURL.String()
+	apiURL := req.generateAPIURL(baseURL)
 	fmt.Printf("WB_API_URL: %#v\n", apiURL)
 
 	r, err := httpClient.Get(apiURL)
@@ -148,6 +131,8 @@ func (pr *ProductListResponse) GetJSON(req ProductListRequest) (err error) {
 	defer r.Body.Close()
 
 	err = json.NewDecoder(r.Body).Decode(&pr)
+
+	pr.updateCache(cacheKey)
 
 	return err
 }
@@ -182,7 +167,6 @@ func (pr *ProductListResponse) GetAll(req ProductListRequest) (err error) {
 	}
 
 	req.Page = 1
-	//totalPages := int(math.Ceil(float64(limit) / float64(totalPerPage)))
 	fullPages := limit / totalPerPage
 	remaining := limit % totalPerPage
 	totalPages := fullPages
@@ -192,6 +176,7 @@ func (pr *ProductListResponse) GetAll(req ProductListRequest) (err error) {
 	fmt.Printf("%+v, %+v, %+v\n", limit, totalPerPage, totalPages)
 
 	pr.Data.Products = make([]ProductLR, 0)
+	var mu sync.Mutex
 
 	wg := &sync.WaitGroup{}
 	for req.Page <= totalPages {
@@ -200,16 +185,17 @@ func (pr *ProductListResponse) GetAll(req ProductListRequest) (err error) {
 			req.Limit = remaining
 		}
 		go func(request ProductListRequest) {
+			defer wg.Done()
+
 			tmp := ProductListResponse{}
 			err = tmp.GetJSON(request)
 			if err != nil {
 				fmt.Printf("error getting product list: %s\n", err)
-				wg.Done()
 				return
 			}
-
+			mu.Lock()
 			pr.Data.Products = append(pr.Data.Products, tmp.Data.Products...)
-			wg.Done()
+			mu.Unlock()
 		}(req)
 		req.Page++
 	}
@@ -243,21 +229,30 @@ func (pr *ProductListResponse) GetIdenticalForAll(req ProductListRequest) (err e
 	totalPages := int(math.Ceil(float64(filter.Data.Total) / float64(totalPerPage)))
 	fmt.Printf("%+v, %+v, %+v\n", filter.Data.Total, totalPerPage, totalPages)
 
-	pr.Data.Products = make([]ProductLR, 0)
 	raw := make([]ProductLR, 0)
+
+	var mu sync.Mutex
 
 	wg := &sync.WaitGroup{}
 	for req.Page <= totalPages {
 		wg.Add(1)
 		go func(request ProductListRequest) {
-			var tmp []ProductLR
-			tmp, err = fetchProductListByPage(request)
+			defer wg.Done()
+			tmp, err := fetchProductListByPage(request)
+			if err != nil {
+				fmt.Printf("error getting product list: %s\n", err)
+				return
+			}
+
+			mu.Lock()
 			raw = append(raw, tmp...)
-			wg.Done()
+			mu.Unlock()
 		}(req)
 		req.Page++
 	}
 	wg.Wait()
+
+	pr.Data.Products = []ProductLR{}
 
 	for i, p := range raw {
 		if p.Id == 120793222 {
@@ -278,26 +273,27 @@ func (pr *ProductListResponse) GetIdenticalForAll(req ProductListRequest) (err e
 			continue
 		}
 
-		p.Identical = make([]ProductDetail, 0)
+		p.Identical = []ProductDetail{}
 
 		ids := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(identical)), ";"), "[]")
 		fmt.Printf("%d -> [%v]\n", p.Id, identical)
 
 		identicalProducts := ProductDetailResponse{}
 		err = identicalProducts.GetJSON(ids)
+		if err != nil {
+			return err
+		}
 
-		products := identicalProducts.Data.Products
-		for j, prod := range products {
+		for _, prod := range identicalProducts.Data.Products {
 			seller := SellerResponse{}
 			err = seller.GetJSON(strconv.Itoa(prod.SupplierId))
 			if err != nil {
 				return err
 			}
 
-			products[j].SupplierInfo = seller
+			prod.SupplierInfo = seller
+			p.Identical = append(p.Identical, prod)
 		}
-
-		p.Identical = append(p.Identical, products...)
 
 		pr.Data.Products = append(pr.Data.Products, p)
 	}
@@ -305,18 +301,71 @@ func (pr *ProductListResponse) GetIdenticalForAll(req ProductListRequest) (err e
 	return err
 }
 
-func fetchProductListByPage(req ProductListRequest) (raw []ProductLR, err error) {
+func fetchProductListByPage(req ProductListRequest) ([]ProductLR, error) {
 	tmp := ProductListResponse{}
-	err = tmp.GetJSON(req)
+	err := tmp.GetJSON(req)
 	if err != nil {
 		return nil, err
 	}
 
-	raw = tmp.Data.Products
-	length := len(tmp.Data.Products)
-	if length == 0 {
+	if len(tmp.Data.Products) == 0 {
 		return nil, errors.New("no products")
 	}
 
-	return raw, nil
+	return tmp.Data.Products, nil
+}
+
+func (rlReq *ProductListRequest) generateCacheKeyAndURL() (string, *url.URL) {
+	var cacheKey string
+	var baseURL *url.URL
+
+	switch rlReq.Mode {
+	case ModeSeller:
+		baseURL = &url.URL{
+			Scheme: "https",
+			Host:   "catalog.wb.ru",
+			Path:   "/sellers/catalog",
+		}
+		cacheKey = fmt.Sprintf("wb-product-list-%s-%s-%d-%d", rlReq.ID, rlReq.Mode, rlReq.Page, rlReq.Limit)
+	case ModeCategory:
+		shard := "beauty3"
+		if rlReq.ID == "9000" {
+			shard = "beauty4"
+		}
+
+		baseURL = &url.URL{
+			Scheme: "https",
+			Host:   "catalog.wb.ru",
+			Path:   fmt.Sprintf("/catalog/%s/catalog", shard),
+		}
+		cacheKey = fmt.Sprintf("wb-product-list-%s-%s-%s-%d-%d", rlReq.ID, rlReq.Mode, shard, rlReq.Page, rlReq.Limit)
+	}
+
+	return cacheKey, baseURL
+}
+
+func (rlReq *ProductListRequest) generateAPIURL(baseURL *url.URL) string {
+	params := baseURL.Query()
+	params.Set("appType", "1")
+	params.Set("curr", "rub")
+	params.Set("dest", "-1257786")
+	params.Set("regions", "80,64,38,4,83,33,68,70,69,30,86,75,40,1,22,66,31,48,110,71")
+	params.Set("sort", "popular")
+	params.Set("spp", "0")
+	if rlReq.Limit > 1 {
+		params.Set("limit", strconv.Itoa(rlReq.Limit))
+	}
+	if rlReq.Page > 1 {
+		params.Set("page", strconv.Itoa(rlReq.Page))
+	}
+
+	switch rlReq.Mode {
+	case ModeSeller:
+		params.Set("supplier", rlReq.ID)
+	case ModeCategory:
+		params.Set("cat", rlReq.ID)
+	}
+
+	baseURL.RawQuery = params.Encode()
+	return baseURL.String()
 }
