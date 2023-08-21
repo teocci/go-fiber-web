@@ -279,7 +279,7 @@ export default class PositionTable extends BaseTable {
             rows.push(row.slice()) // create a copy of row to avoid changing the original array
         }
 
-        const length = data.keywords.length - 1
+        const length = data.keywords.length
 
         const worksheet = XLSX.utils.aoa_to_sheet([header, subHeader, ...rows])
         worksheet['!merges'] = [
