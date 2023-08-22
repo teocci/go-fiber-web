@@ -115,8 +115,8 @@ export default class BaseComponent extends BaseListener {
     destroyChildren($element) {
         $element = $element ?? this.dom
         while ($element.firstChild) {
-            const lastChild = $element.lastChild ?? false
-            if (lastChild) $element.removeChild(lastChild)
+            const $lastChild = $element?.lastChild ?? null
+            if (!isNil($lastChild)) $lastChild.remove()
         }
     }
 }

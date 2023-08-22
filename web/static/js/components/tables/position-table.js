@@ -65,6 +65,8 @@ export default class PositionTable extends BaseTable {
     }
 
     updateTable(d) {
+        if (isNil(d)) return
+
         const columns = cloner(GRID_COLUMNS)
         for (const column of columns) {
             if (column.name !== 'Keywords') continue
@@ -83,8 +85,13 @@ export default class PositionTable extends BaseTable {
             this.resolver = resolve
         })
 
-        this.grid = new gridjs.Grid(config)
-        this.grid.render(this.dom)
+        if (isNil(this.grid)) {
+            this.grid = new gridjs.Grid(config)
+            this.grid.render(this.dom)
+        } else {
+            this.grid.updateConfig(config)
+            this.grid.forceRender()
+        }
 
         console.log('updateTable', {d, resolver: this.resolver})
 

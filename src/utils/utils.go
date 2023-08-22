@@ -30,6 +30,14 @@ func MaxInt(a, b int) int {
 	return b
 }
 
+func MinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+
+	return b
+}
+
 // Ternary evaluates a condition and returns one of two values based on the condition.
 // If the condition is true, it returns the first value (va); otherwise, it returns the second value (vb).
 // Useful to avoid an if statement when initializing variables

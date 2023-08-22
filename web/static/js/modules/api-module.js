@@ -16,7 +16,8 @@ export default class APIModule {
     /** @typedef {Object} CommonRequest
      * @property {string} action
      * @property {string} uid
-     * @property {int} limit
+     * @property {string?} xsubject
+     * @property {int?} limit
      */
 
     /**
@@ -57,8 +58,10 @@ export default class APIModule {
         if (isNil(action) || isNil(uid)) return
 
         const limit = APIModule.gatherLimit(req)
+        const xsubject = isNil(req.xsubject) ? '' : `/${req.xsubject}`
 
-        const url = `/api/v1/positions/${action}/${uid}${limit}`
+        const url = `/api/v1/positions/${action}/${uid}${xsubject}${limit}`
+        console.log('requestPositions', {url})
 
         APIModule.commonFetch(url).then(d => {
             if (isNil(d)) throw new Error('Null position response')

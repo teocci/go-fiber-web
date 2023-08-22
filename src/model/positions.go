@@ -32,6 +32,8 @@ type infoData struct {
 	Stats   MPStatsKeywords
 }
 
+const maxKeywords = 10
+
 func (p *ProductPositionResponse) fetchKeywords() (err error) {
 	kw := MPStatsKeywords{}
 	err = kw.GetJSON(p.Id)
@@ -220,7 +222,11 @@ func FindCommonKeywords(list []ProductLR) []string {
 		return a.Value > b.Value
 	})
 
-	return sorted.Keys()[:10]
+	fmt.Printf("Sorted: %v\n", sorted.Entries())
+
+	size := utils.MinInt(maxKeywords, sorted.Len())
+
+	return sorted.Keys()[:size]
 }
 
 func FilterWordsByCommonKeywords(list []WordsData, keywords []string) (words []WordsData) {

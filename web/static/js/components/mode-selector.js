@@ -117,7 +117,7 @@ export default class ModeSelector extends BaseComponent {
     currentFilter = null
 
     /** @type {Function} */
-    onRequestLoadTable = req => {}
+    onRequestLoadTable = null
 
     constructor($element) {
         super($element)
@@ -367,13 +367,9 @@ export default class ModeSelector extends BaseComponent {
             uid: pageInfo.sellerId,
         }
         APIModule.requestFilters(req, d => {
-            this.updateFilters(d)
+            this.updateFilters(d, req)
             this.onRequestLoadTable(req)
         })
-
-        // APIModule.requestPositions(req, d => {
-        //     console.log('requestPositions', {d})
-        // })
     }
 
     onModeCategory() {
@@ -382,6 +378,8 @@ export default class ModeSelector extends BaseComponent {
     }
 
     onCategoryChange(e) {
+        if (isNil(e)) return
+
         const key = e.target.value
         console.log('onCategoryChange', {key})
         if (isNil(key)) throw new Error('InvalidAttribute: key is null')
@@ -398,18 +396,32 @@ export default class ModeSelector extends BaseComponent {
         }
 
         APIModule.requestFilters(req, d => {
-            this.updateFilters(d)
+            this.updateFilters(d, req)
             this.onRequestLoadTable(req)
         })
-
-        // APIModule.requestPositions(req, d => {
-        //     console.log('requestPositions', {d})
-        // })
 
         console.log('onCategoryChange', {key, uid: item.uid})
     }
 
-    updateFilters(data) {
+    onFilterChange(e, req) {
+        if (isNil(e) || isNil(req)) return
+
+        const key = e.target.value
+        if (isNil(key)) throw new Error('InvalidAttribute: key is null')
+        console.log('onFilterChange', {key})
+
+        if (key === this.currentFilter) return
+
+        this.currentFilter = key
+        req.xsubject = key
+        if (key === '1') delete req.xsubject
+
+        console.log('onFilterChange', {req})
+
+        this.onRequestLoadTable(req)
+    }
+
+    updateFilters(data, req) {
         if (isNil(data)) return
 
         let datum
@@ -424,6 +436,9 @@ export default class ModeSelector extends BaseComponent {
         const $select = document.createElement('select')
         $select.classList.add(SELECTOR_SUID_FILTER, 'selector')
         $select.id = SELECTOR_SUID_FILTER
+        $select.onchange = e => {
+            this.onFilterChange(e, req)
+        }
 
         const all = {
             id: 1,

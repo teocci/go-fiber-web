@@ -6,7 +6,6 @@ package apicontroller
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/teocci/go-fiber-web/src/model"
-	"github.com/teocci/go-fiber-web/src/utils"
 )
 
 const (
@@ -27,7 +26,7 @@ func HandlePositions(c *fiber.Ctx) error {
 		return renderBadRequest(c, "Invalid id: null")
 	}
 
-	req.Xsubject = utils.StringToInt(c.Params("xsubject"))
+	req.Xsubject = c.Params("xsubject")
 
 	req.Limit = c.QueryInt("limit", 0)
 

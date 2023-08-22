@@ -71,7 +71,7 @@ type ProductListResponse struct {
 type ProductListRequest struct {
 	ID       string `json:"id"`
 	Mode     string `json:"mode"`
-	Xsubject int    `json:"xsubject"`
+	Xsubject string `json:"xsubject"`
 	Page     int    `json:"page"`
 	Limit    int    `json:"limit"`
 }
@@ -319,6 +319,11 @@ func (rlReq *ProductListRequest) generateCacheKeyAndURL() (string, *url.URL) {
 	var cacheKey string
 	var baseURL *url.URL
 
+	baseKey := fmt.Sprintf("wb-product-list-%s-%s", rlReq.ID, rlReq.Mode)
+	if rlReq.Xsubject != "" {
+		baseKey = fmt.Sprintf("%s-%s", baseKey, rlReq.Xsubject)
+	}
+
 	switch rlReq.Mode {
 	case ModeSeller:
 		baseURL = &url.URL{
@@ -326,7 +331,7 @@ func (rlReq *ProductListRequest) generateCacheKeyAndURL() (string, *url.URL) {
 			Host:   "catalog.wb.ru",
 			Path:   "/sellers/catalog",
 		}
-		cacheKey = fmt.Sprintf("wb-product-list-%s-%s-%d-%d", rlReq.ID, rlReq.Mode, rlReq.Page, rlReq.Limit)
+		cacheKey = fmt.Sprintf("%s-%d-%d", baseKey, rlReq.Page, rlReq.Limit)
 	case ModeCategory:
 		shard := "beauty3"
 		if rlReq.ID == "9000" {
@@ -338,7 +343,7 @@ func (rlReq *ProductListRequest) generateCacheKeyAndURL() (string, *url.URL) {
 			Host:   "catalog.wb.ru",
 			Path:   fmt.Sprintf("/catalog/%s/catalog", shard),
 		}
-		cacheKey = fmt.Sprintf("wb-product-list-%s-%s-%s-%d-%d", rlReq.ID, rlReq.Mode, shard, rlReq.Page, rlReq.Limit)
+		cacheKey = fmt.Sprintf("%s-%s-%d-%d", baseKey, shard, rlReq.Page, rlReq.Limit)
 	}
 
 	return cacheKey, baseURL
@@ -352,6 +357,9 @@ func (rlReq *ProductListRequest) generateAPIURL(baseURL *url.URL) string {
 	params.Set("regions", "80,64,38,4,83,33,68,70,69,30,86,75,40,1,22,66,31,48,110,71")
 	params.Set("sort", "popular")
 	params.Set("spp", "0")
+	if rlReq.Xsubject != "" {
+		params.Set("xsubject", rlReq.Xsubject)
+	}
 	if rlReq.Limit > 1 {
 		params.Set("limit", strconv.Itoa(rlReq.Limit))
 	}
