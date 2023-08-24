@@ -21,10 +21,12 @@ func HandlePositions(c *fiber.Ctx) error {
 		return renderBadRequest(c, "Invalid action: null")
 	}
 
-	req.ID = c.Params("id")
-	if req.ID == "" {
+	req.SellerID = c.Params("id")
+	if req.SellerID == "" {
 		return renderBadRequest(c, "Invalid id: null")
 	}
+
+	req.CategoryID = c.Params("cat")
 
 	req.Xsubject = c.Params("xsubject")
 

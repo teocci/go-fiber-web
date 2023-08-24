@@ -65,6 +65,8 @@ func Start() {
 	api.Get("/filters/:action/:id/:key", apicontroller.HandleFilter)
 	api.Get("/positions/:action/:id", apicontroller.HandlePositions)
 	api.Get("/positions/:action/:id/:xsubject", apicontroller.HandlePositions)
+	api.Get("/positions/:action/:id/cat/:cat", apicontroller.HandlePositions)
+	api.Get("/positions/:action/:id/cat/:cat/:xsubject", apicontroller.HandlePositions)
 	api.Get("/products/seller/:id", apicontroller.HandleProductList)
 	api.Get("/identical/:id", apicontroller.HandleIdentical)
 

@@ -69,11 +69,12 @@ type ProductListResponse struct {
 }
 
 type ProductListRequest struct {
-	ID       string `json:"id"`
-	Mode     string `json:"mode"`
-	Xsubject string `json:"xsubject"`
-	Page     int    `json:"page"`
-	Limit    int    `json:"limit"`
+	SellerID   string `json:"seller_id"`
+	Mode       string `json:"mode"`
+	CategoryID string `json:"category_id"`
+	Xsubject   string `json:"xsubject"`
+	Page       int    `json:"page"`
+	Limit      int    `json:"limit"`
 }
 
 var (
@@ -104,12 +105,8 @@ func (pr *ProductListResponse) updateCache(cacheKey string) {
 }
 
 func (pr *ProductListResponse) GetJSON(req ProductListRequest) (err error) {
-	if req.ID == "" {
+	if req.SellerID == "" {
 		return fmt.Errorf("invalid id: null")
-	}
-
-	if req.Mode == "" {
-		req.Mode = ModeSeller
 	}
 
 	cacheKey, baseURL := req.generateCacheKeyAndURL()
@@ -143,7 +140,7 @@ func (pr *ProductListResponse) GetFirstPage(req ProductListRequest) (err error) 
 }
 
 func (pr *ProductListResponse) GetAll(req ProductListRequest) (err error) {
-	if req.ID == "" {
+	if req.SellerID == "" {
 		return fmt.Errorf("invalid id: null")
 	}
 
@@ -152,7 +149,7 @@ func (pr *ProductListResponse) GetAll(req ProductListRequest) (err error) {
 	}
 
 	fr := FilterRequest{
-		ID:   req.ID,
+		ID:   req.SellerID,
 		Mode: ModeSeller,
 	}
 	filter := FilterResponse{}
@@ -205,7 +202,7 @@ func (pr *ProductListResponse) GetAll(req ProductListRequest) (err error) {
 }
 
 func (pr *ProductListResponse) GetIdenticalForAll(req ProductListRequest) (err error) {
-	if req.ID == "" {
+	if req.SellerID == "" {
 		return fmt.Errorf("invalid id: null")
 	}
 
@@ -214,7 +211,7 @@ func (pr *ProductListResponse) GetIdenticalForAll(req ProductListRequest) (err e
 	}
 
 	fr := FilterRequest{
-		ID:   req.ID,
+		ID:   req.SellerID,
 		Mode: ModeSeller,
 	}
 	filter := FilterResponse{}
@@ -315,35 +312,59 @@ func fetchProductListByPage(req ProductListRequest) ([]ProductLR, error) {
 	return tmp.Data.Products, nil
 }
 
-func (rlReq *ProductListRequest) generateCacheKeyAndURL() (string, *url.URL) {
-	var cacheKey string
-	var baseURL *url.URL
-
-	baseKey := fmt.Sprintf("wb-product-list-%s-%s", rlReq.ID, rlReq.Mode)
-	if rlReq.Xsubject != "" {
-		baseKey = fmt.Sprintf("%s-%s", baseKey, rlReq.Xsubject)
+func (rlReq *ProductListRequest) generateCacheKeyAndURL() (cacheKey string, baseURL *url.URL) {
+	if rlReq.Mode == "" {
+		rlReq.Mode = ModeSeller
 	}
+
+	baseKey := fmt.Sprintf("wb-product-list-%s", rlReq.Mode)
+
+	pageLimit := fmt.Sprintf("%d-%d", rlReq.Page, rlReq.Limit)
 
 	switch rlReq.Mode {
 	case ModeSeller:
+		if rlReq.SellerID == "" {
+			return
+		}
+
+		baseKey = fmt.Sprintf("%s-%s", baseKey, rlReq.SellerID)
+
+		if rlReq.Xsubject != "" {
+			baseKey = fmt.Sprintf("%s-%s", baseKey, rlReq.Xsubject)
+		}
+
+		cacheKey = fmt.Sprintf("%s-%s", baseKey, pageLimit)
+
 		baseURL = &url.URL{
 			Scheme: "https",
 			Host:   "catalog.wb.ru",
 			Path:   "/sellers/catalog",
 		}
-		cacheKey = fmt.Sprintf("%s-%d-%d", baseKey, rlReq.Page, rlReq.Limit)
+
+		return
 	case ModeCategory:
+		if rlReq.CategoryID == "" {
+			return
+		}
+
+		baseKey = fmt.Sprintf("%s-%s", baseKey, rlReq.CategoryID)
+
+		if rlReq.Xsubject != "" {
+			baseKey = fmt.Sprintf("%s-%s", baseKey, rlReq.Xsubject)
+		}
+
 		shard := "beauty3"
-		if rlReq.ID == "9000" {
+		if rlReq.CategoryID == "9000" {
 			shard = "beauty4"
 		}
+
+		cacheKey = fmt.Sprintf("%s-%s-%s", baseKey, shard, pageLimit)
 
 		baseURL = &url.URL{
 			Scheme: "https",
 			Host:   "catalog.wb.ru",
 			Path:   fmt.Sprintf("/catalog/%s/catalog", shard),
 		}
-		cacheKey = fmt.Sprintf("%s-%s-%d-%d", baseKey, shard, rlReq.Page, rlReq.Limit)
 	}
 
 	return cacheKey, baseURL
@@ -369,9 +390,9 @@ func (rlReq *ProductListRequest) generateAPIURL(baseURL *url.URL) string {
 
 	switch rlReq.Mode {
 	case ModeSeller:
-		params.Set("supplier", rlReq.ID)
+		params.Set("supplier", rlReq.SellerID)
 	case ModeCategory:
-		params.Set("cat", rlReq.ID)
+		params.Set("cat", rlReq.CategoryID)
 	}
 
 	baseURL.RawQuery = params.Encode()

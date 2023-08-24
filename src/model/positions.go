@@ -53,7 +53,7 @@ func (p *ProductPositionResponse) fetchKeywords() (err error) {
 }
 
 func (ppl *ProductPositionListResponse) GetJSON(req ProductListRequest) (err error) {
-	if req.ID == "" {
+	if req.SellerID == "" {
 		return fmt.Errorf("invalid id: null")
 	}
 
@@ -62,13 +62,23 @@ func (ppl *ProductPositionListResponse) GetJSON(req ProductListRequest) (err err
 	}
 
 	kReq := ProductListRequest{
-		ID:       req.ID,
+		SellerID: req.SellerID,
 		Mode:     req.Mode,
 		Xsubject: req.Xsubject,
 		Page:     1,
 		Limit:    10,
 	}
 
+	if kReq.Mode == ModeCategory {
+		if req.CategoryID == "" {
+			return errors.New(fmt.Sprintf("invalid category id: null"))
+		}
+
+		kReq.CategoryID = req.CategoryID
+		kReq.Limit = 25
+	}
+
+	fmt.Printf("Request: [%v]\n", kReq)
 	plResponse := ProductListResponse{}
 	err = plResponse.GetJSON(kReq)
 	if err != nil {
@@ -84,9 +94,16 @@ func (ppl *ProductPositionListResponse) GetJSON(req ProductListRequest) (err err
 
 	fmt.Printf("Common keywords: [%s]\n", strings.Join(ppl.Keywords, ", "))
 
+	pReq := ProductListRequest{
+		SellerID: req.SellerID,
+		Mode:     ModeSeller,
+		Xsubject: req.Xsubject,
+		Limit:    req.Limit,
+	}
+
 	plResponse = ProductListResponse{}
-	fmt.Printf("Request: [%v]\n", req)
-	err = plResponse.GetAll(req)
+	fmt.Printf("Request: [%v]\n", pReq)
+	err = plResponse.GetAll(pReq)
 	if err != nil {
 		return errors.New(fmt.Sprintf("error getting product list: %s", err))
 	}

@@ -373,6 +373,7 @@ export default class ModeSelector extends BaseComponent {
     }
 
     onModeCategory() {
+        this.currentCategory = null
         this.selectedCategory = CATEGORY_KEY_FEMALE
         this.showCategories()
     }
@@ -387,12 +388,16 @@ export default class ModeSelector extends BaseComponent {
         const item = CATEGORY_MAP[key]
         if (isNil(item)) throw new Error('InvalidAttribute: item is null')
 
+        console.log('onCategoryChange', {item})
         if (key === this.currentCategory) return
 
+        console.log('onCategoryChange', {currentCategory: this.currentCategory})
         this.currentCategory = key
+
         const req = {
             action: 'category',
             uid: item.uid,
+            sellerId: pageInfo.sellerId,
         }
 
         APIModule.requestFilters(req, d => {

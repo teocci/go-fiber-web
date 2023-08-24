@@ -18,9 +18,9 @@ func HandleProductList(c *fiber.Ctx) error {
 	}
 
 	req := model.ProductListRequest{
-		ID:    supplierID,
-		Mode:  model.ModeSeller,
-		Limit: limit,
+		SellerID: supplierID,
+		Mode:     model.ModeSeller,
+		Limit:    limit,
 	}
 
 	products := model.ProductListResponse{}
