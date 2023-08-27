@@ -27,6 +27,20 @@ go run main.go
 open http://localhost:9012/page.html
 ```
 
+### Scripts
+```bash
+# run the server
+@echo off
+
+set BIN_PATH=C:\path\to\your\project\bin
+
+echo Running the executable...
+cd %BIN_PATH%
+your_app.exe
+
+pause
+```
+
 
 [1]: https://pkg.go.dev/badge/github.com/teocci/go-fiber-web.svg
 [2]: https://pkg.go.dev/github.com/teocci/go-fiber-web
