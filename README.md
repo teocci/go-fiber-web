@@ -32,11 +32,12 @@ open http://localhost:9012/page.html
 # run the server
 @echo off
 
-set BIN_PATH=C:\path\to\your\project\bin
+set APP_NAME=wb-analyzer
+set BIN_PATH=D:\code\go\%APP_NAME%\bin
 
 echo Running the executable...
 cd %BIN_PATH%
-your_app.exe
+%APP_NAME%.exe
 
 pause
 ```
