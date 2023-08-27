@@ -18,10 +18,13 @@
     --bg-light-gray: hsl(0, 0%, 96%);
     --bg-light-gray-l93: hsl(0, 0%, 93%);
     --bg-light-gray-l86: hsl(0, 0%, 86%);
+    --bg-contrast: hsl(223, 96%, 55%);
 
     --bg-black: hsl(0, 0%, 0%);
     --bg-black-a75: hsla(0, 0%, 0%, .75);
-    --bg-black-a03: hsla(0, 0%, 0%, .3);
+    --bg-black-a50: hsla(0, 0%, 0%, .5);
+    --bg-black-a35: hsla(0, 0%, 0%, .35);
+    --bg-black-a30: hsla(0, 0%, 0%, .3);
 
     /* based on #8076a2 */
     --wb-contrast: hsl(254, 19%, 55%);

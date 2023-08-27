@@ -1,4 +1,3 @@
-import ProductTable from '../components/tables/product-table.js'
 import SellerDetails from '../components/seller-details.js'
 import ModeSelector from '../components/mode-selector.js'
 import PositionTable from '../components/tables/position-table.js'

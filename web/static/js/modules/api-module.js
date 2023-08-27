@@ -12,10 +12,10 @@ export default class APIModule {
         return isNil(limit) ? '' : `?limit=${limit}`
     }
 
-
     /** @typedef {Object} CommonRequest
      * @property {string} action
-     * @property {string} uid
+     * @property {string} sellerId
+     * @property {string?} categoryId
      * @property {string?} xsubject
      * @property {int?} limit
      */
@@ -25,10 +25,13 @@ export default class APIModule {
      * @param callback {Function}
      */
     static requestFilters(req, callback) {
-        if (isNil(req) || isNil(callback)) return
+        if (isNil(req) || isNil(callback)) throw new Error('Null request or callback')
 
-        const {action, uid} = req
-        if (isNil(action) || isNil(uid)) return
+        const {action} = req
+        if (isNil(action)) throw new Error('Null action')
+
+        const uid = action === 'category' ? req.categoryId : req.sellerId
+        if (isNil(uid)) throw new Error('Null uid')
 
         const limit = APIModule.gatherLimit(req)
 
@@ -52,15 +55,22 @@ export default class APIModule {
      * @param callback {Function}
      */
     static requestPositions(req, callback) {
-        if (isNil(req) || isNil(callback)) return
+        if (isNil(req) || isNil(callback)) throw new Error('Null request or callback')
 
-        const {action, uid} = req
-        if (isNil(action) || isNil(uid)) return
+        const {action, sellerId} = req
+        if (isNil(action) || isNil(sellerId)) throw new Error('Action or seller id not found')
 
-        const limit = APIModule.gatherLimit(req)
+        let cat = ''
+        if (req.action === 'category') {
+            if (isNil(req.categoryId)) throw new Error('Category id not found')
+            cat = `/cat/${req.categoryId}`
+        }
+
         const xsubject = isNil(req.xsubject) ? '' : `/${req.xsubject}`
 
-        const url = `/api/v1/positions/${action}/${uid}${xsubject}${limit}`
+        const limit = APIModule.gatherLimit(req)
+
+        const url = `/api/v1/positions/${action}/${sellerId}${cat}${xsubject}${limit}`
         console.log('requestPositions', {url})
 
         APIModule.commonFetch(url).then(d => {

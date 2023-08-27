@@ -4,6 +4,8 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -14,7 +16,19 @@ import (
 
 func Contains(list []string, k string) bool {
 	for _, v := range list {
-		if v == k {
+		if strings.ToLower(v) == strings.ToLower(k) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func ContainsString(list []string, k string) bool {
+	sk := strings.ToLower(k)
+	for _, v := range list {
+		sv := strings.ToLower(v)
+		if strings.Contains(sk, sv) {
 			return true
 		}
 	}
@@ -216,4 +230,42 @@ func GetWithHeaders(url string, headers map[string]string) (resp *http.Response,
 	}
 
 	return resp, nil
+}
+
+func PostRequester(url string, jsonBody interface{}) (*http.Response, error) {
+	client := http.Client{}
+
+	jsonBytes, err := json.Marshal(jsonBody)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	return client.Do(req)
+}
+
+func PostWithHeaders(url string, jsonBody interface{}, headers map[string]string) (*http.Response, error) {
+	client := http.Client{}
+
+	jsonBytes, err := json.Marshal(jsonBody)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+
+	return client.Do(req)
 }

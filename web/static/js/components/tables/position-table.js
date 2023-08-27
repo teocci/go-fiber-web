@@ -99,6 +99,7 @@ export default class PositionTable extends BaseTable {
             this.initHeadAndTable()
             this.addTooltips()
             this.loadTableData(d)
+            loaderComponent.stopLoader()
         }, 500)
     }
 
@@ -256,6 +257,19 @@ export default class PositionTable extends BaseTable {
         this.resolver(data)
     }
 
+    computeInfo() {
+        const {mode, category, xsubject} = currentData
+
+        console.log('computeInfo', {mode, category, xsubject, currentData})
+
+        const m = isNil(mode) ? '' : mode
+        const c = isNil(category) ? '' : isNil(mode) ? category : `-${category}`
+        const x = isNil(xsubject) ? isNil(mode) && isNil(category) ? 'все' : '-все' :
+            isNil(mode) && isNil(category) ? xsubject : `-${xsubject}`
+
+        return `${m}${c}${x}`
+    }
+
     exportTableToXlsx() {
         const data = this.data
         if (isNil(data)) return
@@ -263,7 +277,9 @@ export default class PositionTable extends BaseTable {
         const sellerId = pageInfo.sellerId
 
         const date = todayToYYYYMMDDHHMM()
-        const file = `${date}-${sellerId}.xlsx`
+        const info = this.computeInfo()
+
+        const file = `${date}-${sellerId}-${info}.xlsx`
 
         const spaces = []
         for (const k of data.keywords) {

@@ -7,34 +7,36 @@ import APIModule from '../modules/api-module.js'
 
 const TAG = 'mode-selector'
 
-const OPTION_MODE_KEY_COMPANY = 'company'
-const OPTION_MODE_KEY_CATEGORY = 'category'
+const MODE_KEY_SELLER = 'seller'
+const MODE_KEY_CATEGORY = 'category'
 
 const SELECTOR_SUID_CATEGORY = 'category-selector'
 const SELECTOR_SUID_FILTER = 'filter-selector'
 
 const DEFAULT_FILTER_KEY = 'xsubject'
 
-const OPTION_MODE_BY_COMPANY = {
-    key: OPTION_MODE_KEY_COMPANY,
-    label: 'By Company',
+const OPTION_MODE_BY_SELLER = {
+    key: MODE_KEY_SELLER,
+    suid: MODE_KEY_SELLER,
+    label: 'By Seller',
     icon: 'fa-briefcase',
     url: '/seller/',
 }
 
 const OPTION_MODE_BY_CATEGORY = {
-    key: OPTION_MODE_KEY_CATEGORY,
+    key: MODE_KEY_CATEGORY,
+    suid: MODE_KEY_CATEGORY,
     label: 'By Category',
     icon: 'fa-tags',
 }
 
 const OPTION_MODE_KEYS = [
-    OPTION_MODE_KEY_COMPANY,
-    OPTION_MODE_KEY_CATEGORY,
+    MODE_KEY_SELLER,
+    MODE_KEY_CATEGORY,
 ]
 
-const OPTION_MODES = [
-    OPTION_MODE_BY_COMPANY,
+const OPTION_MODES_LIST = [
+    OPTION_MODE_BY_SELLER,
     OPTION_MODE_BY_CATEGORY,
 ]
 
@@ -111,10 +113,13 @@ export default class ModeSelector extends BaseComponent {
     $fWrapper
 
     /** @type {?string} */
+    currentMode = null
+
+    /** @type {?string} */
     currentCategory = null
 
     /** @type {?string} */
-    currentFilter = null
+    currentXSubject = null
 
     /** @type {Function} */
     onRequestLoadTable = null
@@ -125,10 +130,8 @@ export default class ModeSelector extends BaseComponent {
         this.initModeSelectorElements()
         this.initModeSelectorListeners()
 
-        console.log('ModeSelector', {buttonsMap: this.buttonsMap})
-
         this.showModes()
-        this.onModeCompany()
+        this.onSellerMode()
     }
 
     /**
@@ -203,7 +206,7 @@ export default class ModeSelector extends BaseComponent {
         const $fWrapper = document.createElement('div')
         $fWrapper.classList.add('filters-list', 'list-wrapper', 'cw-part')
 
-        for (const item of OPTION_MODES) {
+        for (const item of OPTION_MODES_LIST) {
             const $btn = this.createButtonElement(item)
             $bWrapper.append($btn)
         }
@@ -244,9 +247,9 @@ export default class ModeSelector extends BaseComponent {
 
     createButtonElement(item) {
         const $btn = document.createElement('button')
-        $btn.classList.add(`bl-${item.key}`, 'bl-item', 'hidden')
+        $btn.classList.add(`bl-${item.key}`, 'bl-btn', 'hidden')
         $btn.dataset.key = item.key
-        $btn.dataset.uid = item.uid
+        $btn.dataset.uid = item.suid
 
         if (!isNil(item.icon)) {
             const $icon = document.createElement('div')
@@ -270,7 +273,7 @@ export default class ModeSelector extends BaseComponent {
 
     createCategorySelector($wrapper) {
         const $select = document.createElement('select')
-        $select.classList.add(SELECTOR_SUID_CATEGORY, 'selector', 'hidden')
+        $select.classList.add(SELECTOR_SUID_CATEGORY, 'selector', 'form-select', 'hidden')
         $select.id = SELECTOR_SUID_CATEGORY
 
         for (const item of CATEGORY_LIST) {
@@ -288,38 +291,6 @@ export default class ModeSelector extends BaseComponent {
         $option.textContent = item.label
 
         return $option
-    }
-
-    createRadioElement(item) {
-        const $radio = document.createElement('div')
-        $radio.classList.add(`rl-${item.key}`, 'rl-item', 'hidden')
-        $radio.dataset.key = item.key
-        $radio.dataset.uid = item.uid
-        $radio.dataset.default = item.default
-
-        const suid = `category-${item.uid}`
-
-        const $input = document.createElement('input')
-        $input.classList.add('cat-input', 'field-part')
-        $input.type = 'radio'
-        $input.name = 'category'
-        $input.value = item.uid
-        $radio.dataset.key = item.key
-        $radio.dataset.uid = item.uid
-        $input.id = suid
-
-        if (item.default) $input.checked = true
-
-        const $label = document.createElement('label')
-        $label.classList.add('cat-label', 'field-part')
-        $label.htmlFor = suid
-        $label.textContent = item.label
-
-        $radio.append($input, $label)
-
-        this.inputsMap.set(item.key, $radio)
-
-        return $radio
     }
 
     showModes() {
@@ -347,24 +318,32 @@ export default class ModeSelector extends BaseComponent {
     }
 
     onButtonClick(e, $btn) {
+        this.notActiveAllButtons()
         const key = $btn.dataset.key
         switch (key) {
-            case OPTION_MODE_KEY_COMPANY:
-                this.onModeCompany()
+            case MODE_KEY_SELLER:
+                this.onSellerMode()
                 break
-            case OPTION_MODE_KEY_CATEGORY:
-                this.onModeCategory()
+            case MODE_KEY_CATEGORY:
+                this.onCategoryMode()
                 break
             default:
                 throw new Error('InvalidAttribute: key is null')
         }
     }
 
-    onModeCompany() {
+    onSellerMode() {
+        this.currentMode = currentData.mode = MODE_KEY_SELLER
+        this.currentCategory = currentData.category = null
+        currentData.xsubject = null
+
+        this.activeSellerBtn()
+        loaderComponent.startLoader()
+
         this.hideCategories()
         const req = {
-            action: 'seller',
-            uid: pageInfo.sellerId,
+            action: MODE_KEY_SELLER,
+            sellerId: pageInfo.sellerId,
         }
         APIModule.requestFilters(req, d => {
             this.updateFilters(d, req)
@@ -372,8 +351,14 @@ export default class ModeSelector extends BaseComponent {
         })
     }
 
-    onModeCategory() {
-        this.currentCategory = null
+    onCategoryMode() {
+        this.currentMode = currentData.mode = MODE_KEY_CATEGORY
+        this.currentCategory = currentData.category = null
+        currentData.xsubject = null
+
+        this.activeCategoryBtn()
+        loaderComponent.startLoader()
+
         this.selectedCategory = CATEGORY_KEY_FEMALE
         this.showCategories()
     }
@@ -390,14 +375,17 @@ export default class ModeSelector extends BaseComponent {
 
         console.log('onCategoryChange', {item})
         if (key === this.currentCategory) return
+        
+        loaderComponent.startLoader()
 
         console.log('onCategoryChange', {currentCategory: this.currentCategory})
-        this.currentCategory = key
+        this.currentCategory = currentData.category = key
+        console.log('onCategoryChange', {currentCategory: this.currentCategory})
 
         const req = {
-            action: 'category',
-            uid: item.uid,
+            action: MODE_KEY_CATEGORY,
             sellerId: pageInfo.sellerId,
+            categoryId: item.uid,
         }
 
         APIModule.requestFilters(req, d => {
@@ -405,7 +393,7 @@ export default class ModeSelector extends BaseComponent {
             this.onRequestLoadTable(req)
         })
 
-        console.log('onCategoryChange', {key, uid: item.uid})
+        console.log('onCategoryChange', {key, req})
     }
 
     onFilterChange(e, req) {
@@ -415,9 +403,14 @@ export default class ModeSelector extends BaseComponent {
         if (isNil(key)) throw new Error('InvalidAttribute: key is null')
         console.log('onFilterChange', {key})
 
-        if (key === this.currentFilter) return
+        const selectedOption = e.target.options[e.target.selectedIndex]
+        currentData.xsubject = selectedOption.dataset.name.toLowerCase()
 
-        this.currentFilter = key
+        if (key === this.currentXSubject) return
+
+        loaderComponent.startLoader()
+
+        this.currentXSubject = key
         req.xsubject = key
         if (key === '1') delete req.xsubject
 
@@ -439,7 +432,7 @@ export default class ModeSelector extends BaseComponent {
         console.log('updateFilters', {datum})
 
         const $select = document.createElement('select')
-        $select.classList.add(SELECTOR_SUID_FILTER, 'selector')
+        $select.classList.add(SELECTOR_SUID_FILTER, 'selector', 'form-select')
         $select.id = SELECTOR_SUID_FILTER
         $select.onchange = e => {
             this.onFilterChange(e, req)
@@ -464,9 +457,43 @@ export default class ModeSelector extends BaseComponent {
         const $option = document.createElement('option')
         $option.classList.add(`bl-${item.id}`, 'bl-item')
         $option.dataset.key = `${DEFAULT_FILTER_KEY}-${item.id}`
+        $option.dataset.name = item.name
         $option.value = item.id
         $option.textContent = `${item.name} (${numberFormatter(item.count)})`
 
         return $option
+    }
+
+    activeSellerBtn() {
+        const $btn = this.buttonsMap.get(MODE_KEY_SELLER)
+        if (isNil($btn)) return false
+
+        return $btn.classList.add('active')
+    }
+
+    activeCategoryBtn() {
+        const $btn = this.buttonsMap.get(MODE_KEY_CATEGORY)
+        if (isNil($btn)) return false
+
+        return $btn.classList.add('active')
+    }
+
+    notActiveSellerBtn() {
+        const $btn = this.buttonsMap.get(MODE_KEY_SELLER)
+        if (isNil($btn)) return false
+
+        return $btn.classList.remove('active')
+    }
+
+    notActiveCategoryBtn() {
+        const $btn = this.buttonsMap.get(MODE_KEY_CATEGORY)
+        if (isNil($btn)) return false
+
+        return $btn.classList.remove('active')
+    }
+
+    notActiveAllButtons() {
+        this.notActiveSellerBtn()
+        this.notActiveCategoryBtn()
     }
 }

@@ -35,8 +35,8 @@ export default class SellerDetails extends BaseComponent {
 
         const $img = document.createElement('img')
         $img.src = '/img/seller-empty-logo.jpg'
-        $img.width = '120'
-        $img.height = '50'
+        $img.width = 120
+        $img.height = 50
 
         const $info = document.createElement('div')
         $info.classList.add('info')
