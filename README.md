@@ -46,6 +46,8 @@ go build -o %APP_NAME%.exe
 
 echo Copying files...
 xcopy /y /d /i %APP_NAME%.exe %BIN_PATH%
+xcopy /y /d /i .env %BIN_PATH%
+xcopy /y /d /i config.json %BIN_PATH%
 xcopy /y /d /i %VIEWS_PATH%\* %BIN_PATH%
 xcopy /y /d /i %WEB_PATH%\* %BIN_PATH%
 
