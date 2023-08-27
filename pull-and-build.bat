@@ -11,11 +11,12 @@ cd %PROJECT_PATH%
 git pull
 
 echo Building Go project...
-go build -o %BIN_PATH%\%APP_NAME%.exe
+go build -o %APP_NAME%.exe
 
 echo Copying files...
-xcopy /s /i %VIEWS_PATH% %BIN_PATH%\views
-xcopy /s /i %WEB_PATH% %BIN_PATH%\web
+xcopy /y /d /i %APP_NAME%.exe %BIN_PATH%
+xcopy /y /d /i %VIEWS_PATH%\* %BIN_PATH%
+xcopy /y /d /i %WEB_PATH%\* %BIN_PATH%
 
 echo Build and copy completed.
 
