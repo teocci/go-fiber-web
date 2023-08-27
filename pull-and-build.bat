@@ -1,19 +1,21 @@
 @echo off
 
-set "project_dir=D:\Apps\wb-analyzer"  REM Replace with your project directory
-set "bin_dir=%project_dir%\bin"
-set "go_exe=go.exe"
-set "git_exe=git.exe"
+set PROJECT_PATH=D:\code\go\wb-analyzer
+set BIN_PATH=%PROJECT_PATH%\bin
+set VIEWS_PATH=%PROJECT_PATH%\views
+set WEB_PATH=%PROJECT_PATH%\web
 
 echo Pulling from Git...
-cd /d "%project_dir%"
-%git_exe% pull origin master
+cd %PROJECT_PATH%
+git pull
 
-echo Building the Go project...
-%go_exe% build -o %bin_dir%\wb-analyzer.exe
+echo Building Go project...
+go build -o %BIN_PATH%\wb-analyzer.exe
 
-echo Copying the executable to the bin directory...
-copy /y %bin_dir%\wb-analyzer.exe %bin_dir%\
+echo Copying files...
+xcopy /s /i %VIEWS_PATH% %BIN_PATH%\views
+xcopy /s /i %WEB_PATH% %BIN_PATH%\web
 
-echo Build process completed.
+echo Build and copy completed.
+
 pause
