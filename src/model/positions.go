@@ -6,9 +6,10 @@ package model
 import (
 	"errors"
 	"fmt"
-	"github.com/teocci/go-fiber-web/src/utils"
 	"sort"
 	"strings"
+
+	"github.com/teocci/go-fiber-web/src/utils"
 )
 
 type CommonWord struct {

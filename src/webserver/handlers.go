@@ -54,6 +54,21 @@ func handleSellerView(c *fiber.Ctx) error {
 	return renderPage(c, page)
 }
 
+func handleAdsView(c *fiber.Ctx) error {
+	sellerID := c.Params("id")
+	limit := c.QueryInt("limit")
+	page := PageInfo{
+		Name:       "marketing",
+		Controller: "ads",
+		SellerID:   sellerID,
+		Limit:      limit,
+	}
+
+	fmt.Printf("renderPage: %s\n", page.Name)
+
+	return renderPage(c, page)
+}
+
 func handleLogoImage(c *fiber.Ctx) error {
 	sellerID := c.Params("id")
 	url := fmt.Sprintf(imgURLFormat, sellerID)

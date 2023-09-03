@@ -5,8 +5,10 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="xlsx.full" level="application" />
+    <orderEntry type="library" name="gridjs" level="application" />
+    <orderEntry type="library" name="tabulator-tables" level="application" />
     <orderEntry type="library" name="xlsx.full" level="application" />
     <orderEntry type="library" name="gridjs" level="application" />
+    <orderEntry type="library" name="xlsx.full" level="application" />
   </component>
 </module>

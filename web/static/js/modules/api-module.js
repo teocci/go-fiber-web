@@ -3,6 +3,28 @@
  * Author: teocci@yandex.com on 2023-Aug-18
  */
 export default class APIModule {
+    /** @typedef {Object} CommonRequest
+     * @property {string} action
+     * @property {string} sellerId
+     * @property {string?} categoryId
+     * @property {string?} xsubject
+     * @property {int?} limit
+     */
+
+    /** @typedef {Object} ProductRequest
+     * @property {string} uid
+     * @property {int?} limit
+     */
+
+    /** @typedef {Object} SellerRequest
+     * @property {string} sellerId
+     */
+
+    /** @typedef {Object} AdsListRequest
+     * @property {string} sellerId
+     * @property {int?} limit
+     */
+
     static gatherLimit(req) {
         if (isNil(req)) return
 
@@ -12,13 +34,59 @@ export default class APIModule {
         return isNil(limit) ? '' : `?limit=${limit}`
     }
 
-    /** @typedef {Object} CommonRequest
-     * @property {string} action
-     * @property {string} sellerId
-     * @property {string?} categoryId
-     * @property {string?} xsubject
-     * @property {int?} limit
+    /**
+     *
+     * @param req {AdsListRequest}
+     * @param callback
      */
+    static requestAdsList(req, callback) {
+        if (isNil(req) || isNil(callback)) throw new Error('Null request or callback')
+
+        const {sellerId} = req || pageInfo.sellerId
+        if (isNil(sellerId)) throw new Error('Seller id not found')
+
+        const limit = APIModule.gatherLimit(req)
+
+        const url = `/api/v1/marketing/${sellerId}${limit}`
+        console.log('requestAdsList', {url})
+
+        APIModule.commonFetch(url).then(d => {
+            if (isNil(d)) throw new Error('Ads list not found')
+
+            const {data} = d
+            if (isNil(data)) throw new Error('Ads list data not found')
+
+            callback(data)
+        }).catch(e => {
+            console.error(e)
+        })
+    }
+
+    /**
+     *
+     * @param req {SellerRequest}
+     * @param callback
+     */
+    static requestSeller(req, callback) {
+        if (isNil(req) || isNil(callback)) throw new Error('Null request or callback')
+
+        const {sellerId} = req || pageInfo.sellerId
+        if (isNil(sellerId)) throw new Error('Seller id not found')
+
+        const url = `/api/v1/seller/${sellerId}`
+        console.log('requestSeller', {url})
+
+        APIModule.commonFetch(url).then(d => {
+            if (isNil(d)) throw new Error('Seller\'s details not found')
+
+            const {data} = d
+            if (isNil(data)) throw new Error('Seller\'s details data not found')
+
+            callback(data)
+        }).catch(e => {
+            console.error(e)
+        })
+    }
 
     /**
      * @param req {CommonRequest}
@@ -84,11 +152,6 @@ export default class APIModule {
             console.error(e)
         })
     }
-
-    /** @typedef {Object} ProductRequest
-     * @property {string} uid
-     * @property {int} limit
-     */
 
     /**
      * @param req {ProductRequest}

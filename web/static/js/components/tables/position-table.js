@@ -6,6 +6,8 @@ import BaseTable from '../../base/base-table.js'
 
 const TAG = 'position-table'
 
+const Grid = gridjs.Grid
+
 const STATE_KEY_INIT = 'initialized'
 const STATE_KEY_DATA_LOADED = 'data-loaded'
 const STATE_KEY_DATA_EMPTY = 'data-empty'
@@ -86,7 +88,7 @@ export default class PositionTable extends BaseTable {
         })
 
         if (isNil(this.grid)) {
-            this.grid = new gridjs.Grid(config)
+            this.grid = new Grid(config)
             this.grid.render(this.dom)
         } else {
             this.grid.updateConfig(config)

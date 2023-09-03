@@ -29,11 +29,11 @@ export default class SellerModule {
         this.products.onStateChange = value => {
             switch (value) {
                 case ProductTable.STATE_KEY_DATA_LOADED:
-                    this.seller.enableButton()
+                    this.seller.enableExportButton()
                     break
 
                 default:
-                    this.seller.disableButton()
+                    this.seller.disableExportButton()
             }
         }
 

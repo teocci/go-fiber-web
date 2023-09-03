@@ -1,0 +1,82 @@
+/**
+ * Created by RTT.
+ * Author: teocci@yandex.com on 2022-6월-10
+ */
+@import 'components/base-component-wrapper.css';
+@import 'components/seller-details.css';
+
+.products {
+    flex-grow: 1;
+    max-height: calc(100vh - var(--footer-height) - 2 * var(--padding));
+    padding: var(--padding);
+    overflow-y: auto;
+}
+
+/*table .gridjs-tbody {*/
+/*    display: block;*/
+/*    max-height: 800px;*/
+/*    width: 100%;*/
+/*    overflow-y: scroll;*/
+/*}*/
+
+/*table .gridjs-thead, table .gridjs-tbody tr {*/
+/*    display: table;*/
+/*    width: 100%;*/
+/*    table-layout: fixed;*/
+/*}*/
+
+/*table .gridjs-thead th:last-child {*/
+/*    width: calc(450px - 1em)*/
+/*}*/
+/*table .gridjs-tbody td:last-child {*/
+/*    width: calc(450px)*/
+/*}*/
+
+.gridjs-table {
+    font-size: .8rem;
+}
+
+.gridjs-table .gridjs-th,
+.gridjs-table .gridjs-td {
+    padding: .5rem 1rem;
+}
+
+.identical-wrapper,
+.wb-product,
+.wbp-item {
+    display: flex;
+    flex-flow: column;
+    gap: .5rem;
+}
+
+.wb-product:not(:last-child):after {
+    content: '';
+    width: 100%;
+    border: 1px solid #e5e7eb;
+}
+
+.wbp-item > .label {
+    color: var(--font-dark-color);
+    font-weight: bold;
+}
+
+.wbp-item > .value {
+    display: flex;
+    flex-flow: row wrap;
+    gap: .5rem;
+}
+
+.value > .ppv-item {
+    flex-grow: 1;
+}
+
+.ppv-item .label {
+    color: #6b7280;
+    font-weight: bold;
+}
+
+.ppv-item .value.lower {
+    color: red;
+    font-weight: bold;
+}
+

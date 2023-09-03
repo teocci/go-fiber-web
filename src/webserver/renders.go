@@ -3,10 +3,12 @@
 // Author: teocci@yandex.com on 2023-3월-21
 package webserver
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 func renderPage(c *fiber.Ctx, page PageInfo) error {
-	return c.Render(page.Name, fiber.Map{
+	return c.Render("marketing", fiber.Map{
 		"page": page,
 	})
 }

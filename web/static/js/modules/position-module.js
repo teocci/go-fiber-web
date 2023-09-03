@@ -51,11 +51,11 @@ export default class PositionModule {
             this.table.onStateChange = value => {
                 switch (value) {
                     case PositionTable.STATE_KEY_DATA_LOADED:
-                        this.info.enableButton()
+                        this.info.enableExportButton()
                         break
 
                     default:
-                        this.info.disableButton()
+                        this.info.disableExportButton()
                 }
             }
         }

@@ -66,14 +66,7 @@ export default class ProductTable extends BaseTable {
         this.initProductTableElements()
         this.initProductTableListeners()
 
-        const res = {
-            action: 'seller',
-            uid: pageInfo.sellerId,
-            limit: pageInfo.limit,
-        }
-        APIModule.fetchProducts(res, d => {
-            this.onProductDataFetched(d)
-        })
+        this.requestProductsData()
     }
 
     initProductTableElements() {
@@ -254,6 +247,17 @@ export default class ProductTable extends BaseTable {
         $price.append($label, $value)
 
         return $price
+    }
+
+    requestProductsData() {
+        const res = {
+            action: 'seller',
+            uid: pageInfo.sellerId,
+            limit: pageInfo.limit,
+        }
+        APIModule.fetchProducts(res, d => {
+            this.onProductDataFetched(d)
+        })
     }
 
     onProductDataFetched(d) {

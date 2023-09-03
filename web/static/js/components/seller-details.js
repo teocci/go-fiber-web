@@ -3,11 +3,40 @@
  * Author: teocci@yandex.com on 2023-Mar-01
  */
 import BaseComponent from '../base/base-component.js'
+import APIModule from '../modules/api-module.js'
 
 const TAG = 'seller-details'
 
 export default class SellerDetails extends BaseComponent {
     static TAG = TAG
+
+    /** @typedef {Object} SellerInfo
+     * @property {number} id
+     * @property {string} name
+     * @property {string} trademark
+     * @property {string} legalAddress
+     * @property {string} fineName
+     * @property {string} ogrn
+     * @property {boolean} isUnknown
+     */
+
+    /** @type {HTMLImageElement} */
+    $logo
+
+    /** @type {HTMLHeadingElement} */
+    $name
+
+    /** @type {HTMLDivElement} */
+    $trademark
+
+    /** @type {HTMLDivElement} */
+    $legalAddress
+
+    /** @type {HTMLButtonElement} */
+    $button
+
+    /** @type {?SellerInfo} */
+    seller
 
     constructor(element) {
         super(element)
@@ -17,7 +46,7 @@ export default class SellerDetails extends BaseComponent {
         this.initElements()
         this.initListeners()
 
-        this.requestSellerDetails()
+        APIModule.requestSeller({sellerId: pageInfo.sellerId}, this.loadData.bind(this))
     }
 
     initElements() {
@@ -89,8 +118,7 @@ export default class SellerDetails extends BaseComponent {
         this.domWithHolderUpdate = $component
     }
 
-    initListeners() {
-    }
+    initListeners() {}
 
     loadData(seller) {
         this.seller = seller
@@ -103,39 +131,24 @@ export default class SellerDetails extends BaseComponent {
         this.$logo.alt = seller?.fineName
     }
 
-    enableButton() {
+    enableExportButton() {
         const $btn = this.$button
         $btn.disabled = false
         delete $btn.disabled
     }
 
-    disableButton() {
+    disableExportButton() {
         const $btn = this.$button
         $btn.disabled = true
     }
 
-    requestSellerDetails() {
-        const sellerId = pageInfo.sellerId
-        const url = `/api/v1/seller/${sellerId}`
-
-        this.fetchSellerDetails(url).then(d => {
-            if (isNil(d)) throw new Error('Seller details not found')
-
-            const {data} = d
-            if (isNil(data)) throw new Error('Seller details data not found')
-
-            this.loadData(data)
-        }).catch(e => {
-            console.error(e)
-        })
+    hideExportButton() {
+        const $btn = this.$button
+        $btn.classList.add('hidden')
     }
 
-    async fetchSellerDetails(url) {
-        const response = await fetch(url)
-        if (!response.ok) return null
-        const data = await response.json()
-        if (isNil(data)) return null
-
-        return data
+    showExportButton() {
+        const $btn = this.$button
+        $btn.classList.remove('hidden')
     }
 }

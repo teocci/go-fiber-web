@@ -62,7 +62,7 @@ coffee
 # CMake
 cmake-build-*/
 
-# Mongo Explorer plugin
+# Mongo Explorer plugins
 .idea/**/mongoSettings.xml
 
 # File-based project format
@@ -71,16 +71,16 @@ cmake-build-*/
 # IntelliJ
 out/
 
-# mpeltonen/sbt-idea plugin
+# mpeltonen/sbt-idea plugins
 .idea_modules/
 
-# JIRA plugin
+# JIRA plugins
 atlassian-ide-plugin.xml
 
-# Cursive Clojure plugin
+# Cursive Clojure plugins
 .idea/replstate.xml
 
-# Crashlytics plugin (for Android Studio and IntelliJ)
+# Crashlytics plugins (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
@@ -155,19 +155,19 @@ $RECYCLE.BIN/
 
 # CMake
 
-# Mongo Explorer plugin
+# Mongo Explorer plugins
 
 # File-based project format
 
 # IntelliJ
 
-# mpeltonen/sbt-idea plugin
+# mpeltonen/sbt-idea plugins
 
-# JIRA plugin
+# JIRA plugins
 
-# Cursive Clojure plugin
+# Cursive Clojure plugins
 
-# Crashlytics plugin (for Android Studio and IntelliJ)
+# Crashlytics plugins (for Android Studio and IntelliJ)
 
 # Editor-based Rest Client
 
@@ -469,7 +469,7 @@ ServiceFabricBackup/
 # Microsoft Fakes
 FakesAssemblies/
 
-# GhostDoc plugin setting file
+# GhostDoc plugins setting file
 *.GhostDoc.xml
 
 # Node.js Tools for Visual Studio
