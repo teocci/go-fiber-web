@@ -31,7 +31,7 @@ func HandleFilter(c *fiber.Ctx) error {
 		return renderBadRequest(c, err.Error())
 	}
 
-	response := response{Data: rf.Data.Filters}
+	response := apiResponse{Data: rf.Data.Filters}
 
 	return c.JSON(response)
 }

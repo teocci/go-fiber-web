@@ -61,6 +61,7 @@ func Start() {
 	api := router.Group("/api/v1")
 	api.Get("/seller/:id", apicontroller.HandleSeller)
 	api.Get("/marketing/:id", apicontroller.HandleMarketing)
+	api.Get("/marketing/:id/:action/:campaign", apicontroller.HandleMarketing)
 	api.Get("/filters/:action/:id", apicontroller.HandleFilter)
 	api.Get("/filters/:action/:id/:key", apicontroller.HandleFilter)
 	api.Get("/positions/:action/:id", apicontroller.HandlePositions)

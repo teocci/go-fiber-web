@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-type AdvertisementContent struct {
+type WBCampaignContent struct {
 	Id                 int           `json:"id"`
 	Type               int           `json:"type"`
 	StatusId           int           `json:"statusId"`
@@ -55,7 +55,7 @@ type AdvertisementContent struct {
 	PromoSetId  interface{} `json:"PromoSetId"`
 }
 
-type AdvertisementListResponse struct {
+type WBCampaignListResponse struct {
 	HttpStatus int    `json:"httpStatus"`
 	Error      string `json:"error"`
 	Code       int    `json:"code"`
@@ -67,15 +67,16 @@ type AdvertisementListResponse struct {
 		DraftCount   int `json:"draftCount"`
 		ArchiveCount int `json:"archiveCount"`
 	} `json:"counts"`
-	Content []AdvertisementContent `json:"content"`
+	Content []WBCampaignContent `json:"content"`
 }
 
-type AdvertisementListRequest struct {
-	Page  int `json:"page"`
-	Limit int `json:"limit"`
+type WBCampaignListRequest struct {
+	SellerID string `json:"seller_id"`
+	Page     int    `json:"page"`
+	Limit    int    `json:"limit"`
 }
 
-func (alr *AdvertisementListResponse) GetAllJSON(req AdvertisementListRequest) (err error) {
+func (alr *WBCampaignListResponse) GetAllJSON(req WBCampaignListRequest) (err error) {
 	if req.Page == 0 {
 		req.Page = 1
 	}

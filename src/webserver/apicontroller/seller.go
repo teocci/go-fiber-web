@@ -21,7 +21,7 @@ func HandleSeller(c *fiber.Ctx) error {
 		return renderInternalError(c, err.Error())
 	}
 
-	response := response{Data: seller}
+	response := apiResponse{Data: seller}
 
 	return c.JSON(response)
 }

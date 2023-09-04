@@ -25,6 +25,12 @@ export default class APIModule {
      * @property {int?} limit
      */
 
+    /** @typedef {Object} MarketingControlRequest
+     * @property {string} sellerId
+     * @property {string} action
+     * @property {string} campaignId
+     */
+
     static gatherLimit(req) {
         if (isNil(req)) return
 
@@ -36,6 +42,37 @@ export default class APIModule {
 
     /**
      *
+     * @param req {MarketingControlRequest}
+     * @param callback
+     */
+    static requestMarketingControl(req, callback) {
+        if (isNil(req) || isNil(callback)) throw new Error('Null request or callback')
+
+        const {sellerId} = req || pageInfo.sellerId
+        if (isNil(sellerId)) throw new Error('Invalid seller id: null')
+
+        const {action, campaignId} = req
+        if (isNil(action)) throw new Error('Invalid action: null')
+        if (isNil(campaignId)) throw new Error('Invalid campaign id: null')
+
+        const url = `/api/v1/marketing/${sellerId}/${action}/${campaignId}`
+        console.log('requestMarketingControl', {url})
+
+        APIModule.commonFetch(url).then(d => {
+            if (isNil(d)) throw new Error('Invalid response: null')
+            console.log('requestMarketingControl', {d})
+
+            const {success} = d
+            if (isNil(success) || !success) return
+
+            callback(success)
+        }).catch(e => {
+            console.error(e)
+        })
+    }
+
+    /**
+     *
      * @param req {AdsListRequest}
      * @param callback
      */
@@ -43,7 +80,7 @@ export default class APIModule {
         if (isNil(req) || isNil(callback)) throw new Error('Null request or callback')
 
         const {sellerId} = req || pageInfo.sellerId
-        if (isNil(sellerId)) throw new Error('Seller id not found')
+        if (isNil(sellerId)) throw new Error('Invalid seller id: null')
 
         const limit = APIModule.gatherLimit(req)
 
@@ -71,7 +108,7 @@ export default class APIModule {
         if (isNil(req) || isNil(callback)) throw new Error('Null request or callback')
 
         const {sellerId} = req || pageInfo.sellerId
-        if (isNil(sellerId)) throw new Error('Seller id not found')
+        if (isNil(sellerId)) throw new Error('Invalid seller id: null')
 
         const url = `/api/v1/seller/${sellerId}`
         console.log('requestSeller', {url})
@@ -96,7 +133,7 @@ export default class APIModule {
         if (isNil(req) || isNil(callback)) throw new Error('Null request or callback')
 
         const {action} = req
-        if (isNil(action)) throw new Error('Null action')
+        if (isNil(action)) throw new Error('Invalid action: null')
 
         const uid = action === 'category' ? req.categoryId : req.sellerId
         if (isNil(uid)) throw new Error('Null uid')

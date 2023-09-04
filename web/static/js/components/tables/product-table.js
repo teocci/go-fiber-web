@@ -7,6 +7,9 @@ import BaseTable from '../../base/base-table.js'
 
 const TAG = 'product-table'
 
+const GridJS = gridjs.Grid
+const GridHTML = gridjs.html
+
 const currencyFormatter = new Intl.NumberFormat('ru-RU', {
     style: 'currency',
     currency: 'RUB',
@@ -73,7 +76,7 @@ export default class ProductTable extends BaseTable {
         const $wrapper = document.createElement('div')
         $wrapper.classList.add('products', 'module-wrapper')
 
-        this.grid = new gridjs.Grid({
+        this.grid = new GridJS({
             columns: [
                 {
                     name: 'ID',
@@ -133,7 +136,7 @@ export default class ProductTable extends BaseTable {
 
                         $tmp.append($wrapper)
 
-                        return gridjs.html($tmp.innerHTML)
+                        return GridHTML($tmp.innerHTML)
                     },
                 },
             ],

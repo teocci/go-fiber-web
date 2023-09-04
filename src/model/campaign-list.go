@@ -3,7 +3,7 @@
 // Author: teocci@yandex.com on 2023-Sep-03
 package model
 
-type AdsInfo struct {
+type CampaignInfo struct {
 	Pos        int    `json:"pos"`
 	Id         int    `json:"id"`
 	Name       string `json:"name"`
@@ -12,28 +12,29 @@ type AdsInfo struct {
 	CampaignId int    `json:"campaign_id"`
 }
 
-type AdsListResponse struct {
-	List []AdsInfo `json:"list"`
+type CampaignListResponse struct {
+	List []CampaignInfo `json:"list"`
 }
 
-type AdsListRequest struct {
-	Page  int `json:"page"`
-	Limit int `json:"limit"`
+type CampaignListRequest struct {
+	SellerID string `json:"seller_id"`
+	Page     int    `json:"page"`
+	Limit    int    `json:"limit"`
 }
 
-func (r *AdsListResponse) GetAdsList(req AdsListRequest) (err error) {
-	listReq := AdvertisementListRequest{}
+func (r *CampaignListResponse) GetAdsList(req CampaignListRequest) (err error) {
+	listReq := WBCampaignListRequest{}
 	listReq.Page = req.Page
 	listReq.Limit = req.Limit
 
-	list := AdvertisementListResponse{}
+	list := WBCampaignListResponse{}
 	err = list.GetAllJSON(listReq)
 	if err != nil {
 		return
 	}
 
 	for i, v := range list.Content {
-		r.List = append(r.List, AdsInfo{
+		r.List = append(r.List, CampaignInfo{
 			Pos:        i + 1,
 			Id:         v.Id,
 			Name:       v.CampaignName,
