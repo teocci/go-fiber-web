@@ -312,12 +312,6 @@ func GetWithHeaders(urlStr string, headers map[string]string) (resp *http.Respon
 		return
 	}
 
-	code := resp.StatusCode
-	if code != 200 {
-		fmt.Printf("Error status code: %d\n", code)
-		return
-	}
-
 	return
 }
 

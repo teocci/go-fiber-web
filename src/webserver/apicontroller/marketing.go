@@ -50,14 +50,13 @@ func handleMarketingControl(c *fiber.Ctx, id, action string) error {
 }
 
 func handleMarketingList(c *fiber.Ctx, id string) error {
-	req := model.CampaignListRequest{
+	req := model.CampaignRAPListRequest{
 		SellerID: id,
-		Page:     c.QueryInt("page", 0),
 		Limit:    c.QueryInt("limit", 0),
 	}
 
 	list := model.CampaignListResponse{}
-	err := list.GetAdsList(req)
+	err := list.GetRAPAdsList(req)
 	if err != nil {
 		return renderBadRequest(c, err.Error())
 	}
