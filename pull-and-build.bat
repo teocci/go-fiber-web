@@ -13,10 +13,21 @@ git pull
 echo Building Go project...
 go build -o %APP_NAME%.exe
 
+if %errorlevel% neq 0 (
+    echo Error: Build failed
+    pause
+    exit /b %errorlevel%
+)
+
+if not exist %BIN_PATH% (
+    mkdir %BIN_PATH%
+)
+
 echo Copying files...
 xcopy /y /d /i %APP_NAME%.exe %BIN_PATH%
 xcopy /y /d /i .env %BIN_PATH%
 xcopy /y /d /i config.json %BIN_PATH%
+xcopy /y /d /i run_in_background.bat %BIN_PATH%
 xcopy /y /d /i %VIEWS_PATH%\* %BIN_PATH%
 xcopy /y /d /i %WEB_PATH%\* %BIN_PATH%
 
