@@ -27,10 +27,10 @@ if not exist %BIN_PATH% (
 )
 
 echo Copying files...
-xcopy /y /d /i .\%APP_NAME%.exe %BIN_PATH%
-xcopy /y /d /i .\.env %BIN_PATH%
-xcopy /y /d /i .\config.json %BIN_PATH%
-xcopy /y /d /i .\run_in_background.bat %BIN_PATH%
+xcopy /y /d /i .\%APP_NAME%.exe %BIN_PATH%\%APP_NAME%.exe
+xcopy /y /d /i .\.env %BIN_PATH%\.env
+xcopy /y /d /i .\config.json %BIN_PATH%\config.json
+xcopy /y /d /i .\run_in_background.bat %BIN_PATH%\run_in_background.bat
 xcopy /y /d /s /i %VIEWS_PATH%\* %BIN_VIEWS_PATH%
 xcopy /y /d /s /i %WEB_PATH%\* %BIN_WEB_PATH%
 
