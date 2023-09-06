@@ -8,6 +8,7 @@ const TAG = 'datable'
 
 const Grid = gridjs.Grid
 const GridHTML = gridjs.html
+const GridH = gridjs.h
 const RowSelection = gridjs.plugins.selection.RowSelection
 
 const STATUS_UID_INIT = 0
@@ -123,11 +124,13 @@ const STATUS_UID_ERROR = 4
  * @property {?HTMLElement} [from]
  * @property {?DTServerConfig} [server] - to enable server integration
  * @property {DTColumn[], string[]} columns
- * @property {DTStyle} [style]
- * @property {object} [className]
- * @property {DTLanguage} [language]
+ * @property {?DTStyle} [style]
+ * @property {?object} [className]
+ * @property {?DTLanguage} [language]
  * @property {?string} width - default: 100%
  * @property {?string} height - default: auto
+ * @property {?boolean} selector - default: false
+ * @property {?boolean} resolver - default: false
  * @property {?boolean} [autoWidth] - default: true
  * @property {?boolean} [fixedHeader] - default: true
  * @property {boolean | DTSearchConfig | null} [search] - to enable the global search plugin
@@ -144,6 +147,9 @@ export default class DatableComponent extends BaseTable {
     grid
 
     resolver
+    dispatcher
+
+    status = STATUS_UID_INIT
 
     /**
      * @param {HTMLElement} $element
@@ -153,20 +159,52 @@ export default class DatableComponent extends BaseTable {
         super($element)
 
         this.options = cloner(options)
+        console.log({options})
 
         this.initDatableElements()
     }
 
     initDatableElements() {
-        this.grid = new Grid({
-            columns: this.options.columns,
-        })
+        if (isNil(this.options)) throw new Error('Datable options is required')
+        if (isNil(this.options.columns)) throw new Error('Datable columns is required')
+
+        if (this.options.resolver === true) {
+            this.options.data = () => new Promise(resolve => {
+                this.resolver = resolve
+            })
+        }
+
+        if (this.options.selector === true) {
+            const column = {
+                name: GridH('input', {
+                    id: 'cb-overall',
+                    type: 'checkbox',
+                    className: 'gridjs-checkbox',
+                    onClick: e => {
+                        this.onOverallChange(e.target)
+                    },
+                }),
+                id: 'cb-selector',
+                width: '40px',
+                sort: false,
+                data: row => row.isChecked,
+                plugin: {
+                    component: RowSelection,
+                },
+            }
+            this.options.columns = [column, ...this.options.columns]
+        }
+
+        this.grid = new Grid(this.options)
 
         this.loadDatable()
     }
 
     loadDatable() {
         this.grid.render(this.dom)
+
+        this.dispatcher = this.grid.config.store.dispatch
+
         this.grid.config.store.subscribe(this.onStateChange.bind(this))
     }
 
@@ -181,6 +219,7 @@ export default class DatableComponent extends BaseTable {
     }
 
     loadData(data) {
+        this.data = data
         this.grid.updateConfig({
             data: data,
         })
@@ -189,18 +228,82 @@ export default class DatableComponent extends BaseTable {
 
     render() {
         this.grid.forceRender()
+        console.log({grid: this.grid, rowSelection: this.grid.config.store.state.rowSelection})
     }
 
-    updateOverall(list) {
-        list = list ?? this.$element.querySelectorAll('input[type="checkbox"].gridjs-checkbox')
-        const $overall = document.getElementById('cb-overall')
-        let checkedCount = 0
-        for (const item of list) {
-            if (item.checked) checkedCount++
-        }
+    updateOverall() {
+        if (this.grid.config.store.state?.rowSelection == null) return
 
-        $overall.checked = checkedCount > 0 && checkedCount === list.length
-        $overall.indeterminate = checkedCount > 0 && checkedCount < list.length
+        const $overall = document.getElementById('cb-overall')
+        if ($overall == null) return
+
+        const length = this.grid.config.data.length
+
+        const list = this.grid.config.store.state.rowSelection?.rowIds
+        let checkedCount = list.length ?? 0
+
+        console.log('checkedCount', {checkedCount})
+
+        $overall.checked = checkedCount > 0 && checkedCount === length
+        $overall.indeterminate = checkedCount > 0 && checkedCount < length
+    }
+
+    checkRow = rowId => state => {
+        const rowIds = state.rowSelection?.rowIds || []
+        return rowIds.indexOf(rowId) > -1 ? state : {
+            ...state,
+            rowSelection: {
+                rowIds: [rowId, ...rowIds],
+            },
+        }
+    }
+
+    uncheckRow = rowId => state => {
+        const rowIds = state.rowSelection?.rowIds || []
+        const index = rowIds.indexOf(rowId)
+
+        // rowId doesn't exist
+        if (index === -1) return state
+
+        const cloned = [...rowIds]
+        cloned.splice(index, 1)
+
+        return {
+            ...state,
+            rowSelection: {
+                rowIds: cloned,
+            },
+        }
+    }
+
+    check(uid, cell) {
+        this.dispatcher(this.checkRow(uid))
+        cell.isChecked = true
+    }
+
+    uncheck(uid, cell) {
+        this.dispatcher(this.uncheckRow(uid))
+        cell.isChecked = false
+    }
+
+    subscribe(fn) {
+        this.grid.config.store.subscribe(e => {
+            e.status === STATUS_UID_RENDERED && fn(e)
+        })
+    }
+
+    onOverallChange($overall) {
+        if (isNil($overall)) return
+        console.log('onOverallChange', {state: this.state})
+
+        const isChecked = $overall.checked
+        const data = this.grid.config.data
+        const state = this.grid.config.store.state
+
+        for (const index in data) {
+            const uid = state.data.rows[index].id
+            isChecked ? this.check(uid, data[index]) : this.uncheck(uid, data[index])
+        }
     }
 
     onCBoxChange(e, list) {
@@ -209,7 +312,22 @@ export default class DatableComponent extends BaseTable {
 
     onStateChange(current, prev) {
         if (current.status === prev.status) return
-        if (current.status === STATUS_UID_LOADED) return
+        if (current.status === this.status) return
+
+        this.status = current.status
+
+        if (this.status !== STATUS_UID_RENDERED) return
+
         this.configCBoxes()
+        this.updateOverall()
+    }
+
+    startLoading() {
+        this.grid.updateConfig({
+            data: () => new Promise(resolve => {
+                this.resolver = resolve
+            })
+        })
+        this.render()
     }
 }

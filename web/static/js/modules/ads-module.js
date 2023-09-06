@@ -1,5 +1,5 @@
 import SellerDetails from '../components/seller-details.js'
-import AdsListTable from '../components/tables/ads-list-table.js'
+import CampaignListTable from '../components/tables/campaign-list-table.js'
 
 /**
  * Created by RTT.
@@ -15,7 +15,7 @@ export default class AdsModule {
     /** @type {SellerDetails} */
     info
 
-    /** @type {AdsListTable} */
+    /** @type {CampaignListTable} */
     table
 
     constructor() {
@@ -31,7 +31,7 @@ export default class AdsModule {
         this.info = new SellerDetails($main)
         this.info.hideExportButton()
 
-        this.table = new AdsListTable($main)
+        this.table = new CampaignListTable($main)
     }
 
     initListeners() {
@@ -39,7 +39,7 @@ export default class AdsModule {
 
         this.table.onStateChange = value => {
             switch (value) {
-                case AdsListTable.STATE_KEY_DATA_LOADED:
+                case CampaignListTable.STATE_KEY_DATA_LOADED:
                     this.info.enableExportButton()
                     break
 

@@ -4,6 +4,7 @@
  */
 import BaseTable from '../../base/base-table.js'
 import APIModule from '../../modules/api-module.js'
+import DatableComponent from './datable-component.js'
 
 const TAG = 'ads-list-table'
 
@@ -191,16 +192,16 @@ const buttonAction = status => {
 }
 
 const TABLE_COLUMNS = [
-    {
-        name: '',
-        id: 'checkbox',
-        sort: false,
-        plugin: {
-            // install the RowSelection plugins
-            component: RowSelection,
-        },
-        width: '50px',
-    },
+    // {
+    //     name: '',
+    //     id: 'checkbox',
+    //     sort: false,
+    //     plugin: {
+    //         // install the RowSelection plugins
+    //         component: RowSelection,
+    //     },
+    //     width: '50px',
+    // },
     {
         name: 'No',
         id: 'no',
@@ -210,11 +211,13 @@ const TABLE_COLUMNS = [
         name: 'ID',
         id: 'id',
         width: '60px',
+        sort: true,
     },
     {
         name: 'Name',
         id: 'name',
         width: '150px',
+        sort: true,
     },
     {
         name: '',
@@ -229,16 +232,19 @@ const TABLE_COLUMNS = [
     {
         name: 'Type',
         id: 'type_name',
-        width: '100px',
+        width: '80px',
+        sort: true,
     },
     {
         name: 'Status',
         id: 'status_name',
-        width: '100px',
+        width: '80px',
+        sort: true,
     },
     {
         name: 'Actions',
         id: 'actions',
+        width: '140px',
     },
 ]
 
@@ -259,34 +265,44 @@ const typeLabel = uid => {
 const TABLE_CONFIG = {
     columns: [],
     search: true,
-    sort: true,
     fixedHeader: true,
+    selector: true,
+    resolver: true,
     width: '1120px',
     height: '310px',
 }
 
-export default class AdsListTable extends BaseTable {
+export default class CampaignListTable extends BaseTable {
     static TAG = TAG
 
-    grid
+    /** @type {DatableComponent} */
+    datable
 
     constructor(element) {
         super(element)
 
-        this.initAdsListTableElements()
+        this.initCampaignListTableElements()
+        this.initCampaignTable()
 
-        this.requestAdsListData()
+        this.requestCampaignListData()
     }
 
-    initAdsListTableElements() {
+    initCampaignListTableElements() {
         const $wrapper = document.createElement('div')
         $wrapper.classList.add(TAG, 'module-wrapper')
 
+        // this.grid = new Grid(config)
+        // this.grid.render(this.dom)
+        // this.grid.config.store.subscribe(() => {
+        //     this.updateTableListeners()
+        // })
+
+        this.domWithHolderUpdate = $wrapper
+    }
+
+    initCampaignTable() {
         const config = cloner(TABLE_CONFIG)
         config.columns = cloner(TABLE_COLUMNS)
-        config.data = () => new Promise(resolve => {
-            this.resolver = resolve
-        })
 
         for (const column of config.columns) {
             if (column.id !== 'actions') continue
@@ -310,18 +326,16 @@ export default class AdsListTable extends BaseTable {
             }
         }
 
-        this.grid = new Grid(config)
-        this.grid.render(this.dom)
-        this.grid.config.store.subscribe(() => {
-            this.updateTableListeners()
+        this.datable = new DatableComponent(this.dom, config)
+        this.datable.subscribe(e => {
+            this.updateTableListeners(e)
         })
 
         this.initHeadAndTable()
-
-        this.domWithHolderUpdate = $wrapper
     }
 
-    updateTableListeners() {
+    updateTableListeners(e) {
+        console.log('updateTableListeners', {e})
         const list = [...document.querySelectorAll('.btn-action')]
         for (const item of list) {
             item.onclick = e => this.onActionClicked(e, item)
@@ -372,113 +386,17 @@ export default class AdsListTable extends BaseTable {
         this.$table = document.querySelector('.gridjs-table')
     }
 
-    /**
-     * @typedef {Object} WordInfo
-     * @property {string} word
-     * @property {number} avgPos
-     * @property {number} count
-     * @property {number} wb_count
-     * @property {number} total
-     * @property {number[]} pos
-     *
-     *
-     * @typedef {Object} ProductItem
-     * @property {number} id
-     * @property {string} name
-     * @property {number} brandId
-     * @property {string} brand
-     * @property {number} supplierId
-     * @property {number} pos
-     * @property {WordInfo[]} words
-     *
-     *
-     * @typedef {Object} ProductItems
-     * @property {string[]} keywords
-     * @property {ProductItem[]} products
-     *
-     * @param d {ProductItems}
-     */
-    loadTableData(d) {
-        console.log('loadTableData', {d})
-        /**
-         *
-         * @param list {WordInfo[]}
-         * @returns {string[]}
-         */
-        const processPosition = list => {
-            const words = []
-            for (const k of d.keywords) {
-                if (isNil(list)) {
-                    words.push('-')
-                    continue
-                }
-                const item = list.find(p => p?.word === k)
-                if (isNil(item)) {
-                    words.push('-')
-                    continue
-                }
-
-                words.push(item.avgPos)
-            }
-
-            return words
-        }
-
-        const data = d.products.map(p => [p.pos, p.id, p.name, ...processPosition(p.words)])
-        this.data = {
-            keywords: d.keywords,
-            products: [],
-        }
-        for (const product of d.products) {
-            if (isNil(product)) continue
-            const item = {
-                pos: product.pos,
-                id: product.id,
-                name: product.name,
-                words: [],
-            }
-
-            for (const k of d.keywords) {
-                const info = isNil(product.words) ? null : product.words.find(p => p?.word === k)
-                const word = {
-                    key: k,
-                    pos: isNil(info) || info?.avgPos < 1 ? '-' : info.avgPos,
-                }
-                item.words.push(word)
-            }
-
-            this.data.products.push(item)
-        }
-
-        this.state = data.length > 0 ? STATE_KEY_DATA_LOADED : STATE_KEY_DATA_EMPTY
-
-        this.resolver(data)
-    }
-
-    computeInfo() {
-        const {mode, category, xsubject} = currentData
-
-        console.log('computeInfo', {mode, category, xsubject, currentData})
-
-        const m = isNil(mode) ? '' : mode
-        const c = isNil(category) ? '' : isNil(mode) ? category : `-${category}`
-        const x = isNil(xsubject) ? isNil(mode) && isNil(category) ? 'все' : '-все' :
-            isNil(mode) && isNil(category) ? xsubject : `-${xsubject}`
-
-        return `${m}${c}${x}`
-    }
-
-    requestAdsListData() {
+    requestCampaignListData() {
         const res = {
             sellerId: pageInfo.sellerId,
         }
-        APIModule.requestAdsList(res, d => {
-            this.onAdsListDataFetched(d)
+        APIModule.requestCampaignList(res, d => {
+            this.onCampaignListDataFetched(d)
         })
     }
 
-    onAdsListDataFetched(d) {
-        console.log('onAdsListDataFetched', {d})
+    onCampaignListDataFetched(d) {
+        console.log('onCampaignListDataFetched', {d})
 
         const data = d.map(ad => [
             ad.pos,
@@ -491,13 +409,17 @@ export default class AdsListTable extends BaseTable {
             ad,
         ])
 
-        this.resolver(data)
+        this.loadTable(data)
     }
 
     onActionClicked(e, item) {
         if (isNil(item)) return
 
         const {id, action} = item.dataset
+        console.log('onActionClicked', {id, action})
+
+        this.datable.startLoading()
+
         const res = {
             sellerId: pageInfo.sellerId,
             campaignId: id,
@@ -508,9 +430,12 @@ export default class AdsListTable extends BaseTable {
         })
     }
 
+    loadTable(data) {
+        this.datable.loadData(data)
+    }
+
     onMarketingControlResponse(d) {
         console.log('onMarketingControlResponse', {d})
-        this.resolver([])
-        this.grid.forceRender();
+        setTimeout(() => this.requestCampaignListData(), 2000)
     }
 }

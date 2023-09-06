@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/teocci/go-fiber-web/src/utils"
 	"net/url"
-	"os"
 )
 
 type WBCampaignControlRequest struct {
@@ -17,6 +16,15 @@ type WBCampaignControlRequest struct {
 }
 
 func (wbcr *WBCampaignControlRequest) SendAction() (err error) {
+	if wbcr.SellerID == "" {
+		return fmt.Errorf("invalid seller_id: null")
+	}
+
+	token := parseWBToken(wbcr.SellerID, "ADV")
+	if token == "" || len(token) < 20 {
+		return fmt.Errorf("invalid token: null")
+	}
+
 	baseURL := &url.URL{
 		Scheme: "https",
 		Host:   "advert-api.wb.ru",
@@ -31,11 +39,12 @@ func (wbcr *WBCampaignControlRequest) SendAction() (err error) {
 	fmt.Printf("WB_API_URL: %#v\n", apiURL)
 
 	headers := map[string]string{
-		"Authorization": os.Getenv(fmt.Sprintf("WB_AUTH_TOKEN_%s", wbcr.SellerID)),
+		"Authorization": token,
 	}
 
 	r, err := utils.GetWithHeaders(apiURL, headers)
 	if err != nil {
+		fmt.Printf("error: %#v", err)
 		return err
 	}
 	defer r.Body.Close()

@@ -62,10 +62,7 @@ export default class APIModule {
             if (isNil(d)) throw new Error('Invalid response: null')
             console.log('requestMarketingControl', {d})
 
-            const {success} = d
-            if (isNil(success) || !success) return
-
-            callback(success)
+            callback(d)
         }).catch(e => {
             console.error(e)
         })
@@ -76,7 +73,7 @@ export default class APIModule {
      * @param req {AdsListRequest}
      * @param callback
      */
-    static requestAdsList(req, callback) {
+    static requestCampaignList(req, callback) {
         if (isNil(req) || isNil(callback)) throw new Error('Null request or callback')
 
         const {sellerId} = req || pageInfo.sellerId

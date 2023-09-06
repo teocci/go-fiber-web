@@ -39,6 +39,7 @@ func handleMarketingControl(c *fiber.Ctx, id, action string) error {
 
 	err := req.SendAction()
 	if err != nil {
+		fmt.Printf("error: %#v", err)
 		return renderBadRequest(c, err.Error())
 	}
 

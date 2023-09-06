@@ -41,6 +41,10 @@
     padding: .5rem 1rem;
 }
 
+.gridjs-thead .gridjs-tr .gridjs-th{
+    text-align: center;
+}
+
 .identical-wrapper,
 .wb-product,
 .wbp-item {
