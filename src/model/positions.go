@@ -378,7 +378,7 @@ func FindCommonKeywords(products []ProductLR) []CommonWord {
 //		fmt.Printf("Len: [%d]\n", pLen)
 //	}
 //
-//	// Create a map to keep track of k occurrences
+//	// Create a map to keep track of k occurrences.
 //	occurrences := make(map[string]int)
 //	positions := make(map[string]int)
 //
