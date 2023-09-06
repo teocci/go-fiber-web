@@ -5,6 +5,7 @@ set PROJECT_PATH=D:\code\go\%APP_NAME%
 set BIN_PATH=%PROJECT_PATH%\bin
 set VIEWS_PATH=%PROJECT_PATH%\views
 set WEB_PATH=%PROJECT_PATH%\web
+
 set BIN_VIEWS_PATH=%BIN_PATH%\views
 set BIN_WEB_PATH=%BIN_PATH%\web
 
